@@ -17,33 +17,17 @@ public class DataCollection {
 	private int samplesCollected = 0;
 	private long lastCollectedTime = 0;
 	private long lastPolledTimestamp = 0;
-	private final float[] lastPolledData;
+	private float[] lastPolledData;
 	private ArrayList<ArrayList<Float>> sensorsData;
 	private float lastSampleTime = 0;
-	private final float dt;
+	private float dt;
 
 	public DataCollection(ExperimentConfig config) {
-		SensorConfig[] configs = config.getSensorConfigs();
-		dt = config.getPeriod();
 		synchronized (flag) {
 			id = 110 + COUNT;
-			COUNT += configs.length + 1;
+			COUNT += 10; // for now, don't support more than 9 sensors (plus 1 time) per device
 		}
-		sensorConfigs = new ArrayList<SensorConfig>();
-
-		// fake time sensor so we can properly export time column values
-		SensorConfigImpl timeConfig = new SensorConfigImpl();
-		timeConfig.setUnit("s");
-		timeConfig.setName("Time");
-		sensorConfigs.add(timeConfig); // Time is always the 0-index sensor
-		sensorConfigs.addAll(Arrays.asList(configs));
-		sensorsData = new ArrayList<ArrayList<Float>>();
-		
-		lastPolledData = new float[sensorConfigs.size()];
-		for (int i = 0; i < sensorConfigs.size(); i++) {
-			sensorsData.add(new ArrayList<Float>());
-			lastPolledData[i] = 0;
-		}
+		updateSensors(config);
 	}
 	
 	public void appendCollectedData(int numSamples, float[] data) {
@@ -147,5 +131,25 @@ public class DataCollection {
 
 	public int getNumberOfSamples() {
 		return samplesCollected;
+	}
+
+	public void updateSensors(ExperimentConfig config) {
+		SensorConfig[] configs = config.getSensorConfigs();
+		dt = config.getPeriod();
+		sensorConfigs = new ArrayList<SensorConfig>();
+
+		// fake time sensor so we can properly export time column values
+		SensorConfigImpl timeConfig = new SensorConfigImpl();
+		timeConfig.setUnit("s");
+		timeConfig.setName("Time");
+		sensorConfigs.add(timeConfig); // Time is always the 0-index sensor
+		sensorConfigs.addAll(Arrays.asList(configs));
+		sensorsData = new ArrayList<ArrayList<Float>>();
+		
+		lastPolledData = new float[sensorConfigs.size()];
+		for (int i = 0; i < sensorConfigs.size(); i++) {
+			sensorsData.add(new ArrayList<Float>());
+			lastPolledData[i] = 0;
+		}
 	}
 }

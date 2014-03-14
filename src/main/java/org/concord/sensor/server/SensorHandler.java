@@ -137,7 +137,7 @@ public class SensorHandler extends AbstractHandler implements DataSink {
 			if (!c.isPristine(config) && c.getNumberOfSamples() == 0) {
 				// sensors changed, but no data collected
 				// collections.remove(c);
-				startNewCollection(config);
+				c.updateSensors(config);
 			}
 			c.setLastPolledData(data);
 		}
