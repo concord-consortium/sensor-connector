@@ -11,6 +11,7 @@ import java.util.concurrent.TimeUnit;
 import org.apache.log4j.LogManager;
 import org.apache.log4j.Logger;
 import org.concord.sensor.ExperimentConfig;
+import org.concord.sensor.ExperimentRequest;
 import org.concord.sensor.SensorConfig;
 import org.concord.sensor.SensorRequest;
 import org.concord.sensor.device.SensorDevice;
@@ -279,14 +280,20 @@ public class SensorStateManager {
 		actions.put("startPolling", new Action() {
 			@Override
 			public void doAction(Event message, Entity entity, Transition transition, int actionType) throws TransitionRollbackException, TransitionFailureException, InterruptedException {
-				Runnable r = new Runnable() {
+				datasink.startNewCollection(getDeviceConfig());
+				
+				Runnable r2 = new Runnable() {
 					@Override
 					public void run() {
-						readSingleValue();
+						try {
+							readSingleValue();
+						} catch (Exception e) {
+							logger.error("Failed to read data from the device!", e);
+						}
 					}
 					
 				};
-				collectionTask = executor.scheduleAtFixedRate(r, 1, 1, TimeUnit.SECONDS);
+				collectionTask = executor.scheduleAtFixedRate(r2, 1, 1, TimeUnit.SECONDS);
 			}
 		});
 
@@ -301,29 +308,26 @@ public class SensorStateManager {
 			@Override
 			public void doAction(Event message, Entity entity, Transition transition, int actionType) throws TransitionRollbackException, TransitionFailureException, InterruptedException {
 				ExperimentConfig config = getDeviceConfig();
-				if (config == null) { throw new TransitionFailureException("Couldn't fetch config from device! Restarting...", message, entity, transition, actionType, null); }
-
-				SensorRequest[] sensors = getSensorsFromCurrentConfig();
-				numSensors = sensors.length;
-				if (sensors == null || numSensors < 1) { throw new TransitionFailureException("No sensors attached! Restarting...", message, entity, transition, actionType, null); }
-				
-				ExperimentRequestImpl request = new ExperimentRequestImpl();
-
-				request.setPeriod(config.getDataReadPeriod());
-				request.setNumberOfSamples(-1);
-
-				request.setSensorRequests(sensors);
+				ExperimentRequest request;
 				try {
-				device.configure(request);
-				} catch (RuntimeException e) {
-					if (e.getMessage().equals("error opening device")) {
-						// Try it again
-						Thread.sleep(1000);
-						device.configure(request);
-					}
+					request = generateExperimentRequest(config);
+				} catch (Exception e1) {
+					throw new TransitionFailureException(e1.getMessage(), message, entity, transition, actionType, null);
 				}
-				
-				datasink.startNewCollection(config);
+				try {
+					device.configure(request);
+				} catch (RuntimeException e) {
+					// force re-getting the currently attached sensors and try it again
+					Thread.sleep(1000);
+					config = getDeviceConfig(true);
+					try {
+						request = generateExperimentRequest(config);
+					} catch (Exception e1) {
+						throw new TransitionFailureException(e1.getMessage(), message, entity, transition, actionType, null);
+					}
+					device.configure(request);
+				}
+
 				final float[] data = new float[1024];
 				final Runnable r = new Runnable() {
 					public void run() {
@@ -431,8 +435,28 @@ public class SensorStateManager {
 		});
 	}
 
+	private ExperimentRequest generateExperimentRequest(ExperimentConfig config) throws Exception {
+		if (config == null) { throw new Exception("Couldn't fetch config from device! Restarting..."); }
+
+		SensorRequest[] sensors = getSensorsFromCurrentConfig(config);
+		numSensors = sensors.length;
+		if (sensors == null || numSensors < 1) { throw new Exception("No sensors attached! Restarting...");  }
+		
+		ExperimentRequestImpl request = new ExperimentRequestImpl();
+
+		request.setPeriod(config.getPeriod());
+		request.setNumberOfSamples(-1);
+
+		request.setSensorRequests(sensors);
+		return request;
+	}
+
 	private ExperimentConfig getDeviceConfig() {
-		if (device != null && (reportedConfig == null || (System.currentTimeMillis() - reportedConfigLoadedAt) > 1000)) {
+		return getDeviceConfig(false);
+	}
+
+	private ExperimentConfig getDeviceConfig(boolean force) {
+		if (device != null && (force || reportedConfig == null || (System.currentTimeMillis() - reportedConfigLoadedAt) > 1000)) {
 			Runnable r = new Runnable() {
 				public void run() {
 					logger.debug("Getting device config: " + Thread.currentThread().getName());
@@ -452,36 +476,13 @@ public class SensorStateManager {
 
 	private int numErrors = 0;
 	private int numSensors = 0;
-	private void readSingleValue() {
+	private void readSingleValue() throws Exception {
 		// There's probably a more efficient way of doing this.
 		// GoIO devices, for instance, support one-shot data collection.
 		// Perhaps other devices do as well?
 
-		ExperimentConfig config = getDeviceConfig();
-		if (config == null) {
-			logger.debug("NO CONFIG FOUND!");
-			return;
-		}
-		final SensorConfig[] configs = config.getSensorConfigs();
-		
-		numSensors = configs.length;
-		if (configs == null || numSensors < 1) {
-			logger.debug("NO SENSORS FOUND!");
-			return;
-		}
-		final float minPeriod = (config.getPeriod() < 0.001) ? 0.1f : config.getPeriod();
-		
-		ExperimentRequestImpl request = new ExperimentRequestImpl();
-
-		SensorRequest[] sensors = getSensorsFromCurrentConfig();
-		if (sensors == null || sensors.length == 0) {
-			return;
-		}
-
-		request.setPeriod(minPeriod);
-		request.setNumberOfSamples(-1);
-
-		request.setSensorRequests(sensors);
+		final ExperimentConfig config = getDeviceConfig();
+		ExperimentRequest request = generateExperimentRequest(config);
 		device.configure(request);
 
 		Runnable start = new Runnable() {
@@ -513,7 +514,7 @@ public class SensorStateManager {
 							// some devices (ex: GoIO) report -1 samples to indicate an error, or
 							// will just report 0 samples continuously after being unplugged
 							numErrors++;
-							Thread.sleep((int)(1000 * minPeriod));
+							Thread.sleep((int)(1000 * config.getDataReadPeriod()));
 						}
 					} catch (Exception e) {
 						numErrors++;
@@ -551,8 +552,7 @@ public class SensorStateManager {
 		}
 	}
 	
-	private SensorRequest[] getSensorsFromCurrentConfig() {
-		ExperimentConfig deviceConfig = getDeviceConfig();
+	private SensorRequest[] getSensorsFromCurrentConfig(ExperimentConfig deviceConfig) {
 		if (deviceConfig == null || deviceConfig.getSensorConfigs() == null) {
 			return null;
 		}
