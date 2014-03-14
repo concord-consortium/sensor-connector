@@ -30,23 +30,23 @@ public class DataCollection {
 		updateSensors(config);
 	}
 	
-	public void appendCollectedData(int numSamples, float[] data) {
-		synchronized(sensorsData) {
-			for (int sensor = 0; sensor < sensorConfigs.size(); sensor++) {
-				ArrayList<Float> sensorData = sensorsData.get(sensor);
-				for (int sample = 0; sample < numSamples; sample++) {
-					if (sensor == 0) {
-						// dt-based time value
-						sensorData.add(lastSampleTime);
-						lastSampleTime += dt;
-					} else {
-						sensorData.add(data[sample*sensorConfigs.size() + (sensor-1)]);
-					}
+	public synchronized void appendCollectedData(int numSamples, float[] data) {
+		int idx = 0;
+		for (int sensor = 0; sensor < sensorConfigs.size(); sensor++) {
+			ArrayList<Float> sensorData = sensorsData.get(sensor);
+			for (int sample = 0; sample < numSamples; sample++) {
+				if (sensor == 0) {
+					// dt-based time value
+					sensorData.add(lastSampleTime);
+					lastSampleTime += dt;
+				} else {
+					idx = sample*(sensorConfigs.size()-1) + (sensor-1);
+					sensorData.add(data[idx]);
 				}
 			}
-			samplesCollected += numSamples;
-			lastCollectedTime = System.currentTimeMillis();
 		}
+		samplesCollected += numSamples;
+		lastCollectedTime = System.currentTimeMillis();
 	}
 	
 	public float[][] getCollectedData() {
