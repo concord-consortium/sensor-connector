@@ -82,13 +82,18 @@ public class DataCollection {
 		for (int i = 0; i < sensorConfigs.size(); i++) {
 			SensorConfig config = sensorConfigs.get(i);
 			int sensorId = id + i;
+
+			String unit = config.getUnit();
+			if (unit == null) {
+				unit = "";
+			}
 			
 			JSONObject sensorInfo = new JSONObject();
 			sensorInfo.put("id", ""+sensorId);
 			sensorInfo.put("setID", ""+id);
 			sensorInfo.put("position", i);
 			sensorInfo.put("name", config.getName());
-			sensorInfo.put("units", config.getUnit());
+			sensorInfo.put("units", unit);
 			sensorInfo.put("valueCount", samplesCollected);
 			sensorInfo.put("valuesTimeStamp", lastCollectedTime);
 			sensorInfo.put("liveValue", ""+lastPolledData[i]);
