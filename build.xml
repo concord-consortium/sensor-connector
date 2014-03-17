@@ -1,0 +1,86 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project name="SensorServer" default="build" basedir=".">
+
+  <property environment="env" />
+  <condition property="certname" value="${env.CERT_NAME}" else="Developer ID Application: Concord Consortium Inc (T8HS8WBPPQ)">
+    <isset property="env.CERT_NAME" />
+  </condition>
+
+  <taskdef name="bundleapp" classname="com.oracle.appbundler.AppBundlerTask" classpath="lib/appbundler-1.0ea.jar" />
+
+  <target name="clean">
+    <exec executable="rm" failonerror="false">
+      <arg value="dist/app/Applications" />
+    </exec>
+    <delete removeNotFollowedSymlinks="true" followSymlinks="false" includeEmptyDirs="true" failonerror="false">
+      <fileset dir="dist" />
+    </delete>
+  </target>
+
+  <target name="prep" depends="clean">
+    <mkdir dir="dist" />
+    <mkdir dir="dist/app" />
+    <mkdir dir="dist/app/.background" />
+  </target>
+
+  <target name="build" depends="prep">
+    <exec executable="mvn" failonerror="true">
+      <arg value="-U" />
+      <arg value="-DincludeScope=runtime" />
+      <arg value="clean" />
+      <arg value="package" />
+      <arg value="dependency:copy-dependencies" />
+    </exec>
+  </target>
+
+  <target name="mac-stage" depends="build">
+    <fail unless="env.JAVA_HOME" message="You must set JAVA_HOME (eg: 'export JAVA_HOME=`/usr/libexec/java_home`')" />
+    <copy file="resources/bg.png" todir="dist/app/.background" />
+    <symlink link="dist/app/Applications" resource="/Applications" overwrite="true" />
+    <bundleapp outputdirectory="dist/app"
+               name="SensorServer" displayname="Sensor Server"
+               executableName="SensorServer"
+               shortversion="1.0" version="1.0.0"
+               icon="resources/cc-lightbulb.icns"
+               identifier="org.concord.sensor.server.SensorServer"
+               mainclassname="org.concord.sensor.server.SensorServer">
+
+      <arch name="x86_64" />
+      <arch name="i386" />
+
+      <runtime dir="${env.JAVA_HOME}" />
+      <classpath dir="target/">
+        <include name="**/*.jar" />
+      </classpath>
+
+      <option value="-Xmx512M" name="Xmx" />
+      <option value="-Xms32M" name="Xms" />
+
+      <bundledocument extensions="ccss"
+        icon="resources/cc-lightbulb.icns"
+        name="Sensor Server Doc"
+        role="viewer">
+      </bundledocument>
+    </bundleapp>
+  </target>
+
+  <target name="mac-sign">
+    <exec executable="codesign" failonerror="false">
+      <arg value="--deep" />
+      <arg value="-s" />
+      <arg value="${certname}" />
+      <arg value="dist/app/SensorServer.app" />
+    </exec>
+  </target>
+
+  <target name="mac-package" depends="prep,build,mac-stage,mac-sign">
+    <exec executable="./script/create_dmg.sh" />
+    <exec executable="codesign" failonerror="false">
+      <arg value="-s" />
+      <arg value="${certname}" />
+      <arg value="dist/sensor_server_installer.dmg" />
+    </exec>
+  </target>
+
+
+</project>
