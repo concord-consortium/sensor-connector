@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<project name="SensorServer" default="build" basedir=".">
+<project name="SensorServer" default="build" basedir="." xmlns:fx="javafx:com.sun.javafx.tools.ant">
 
   <property environment="env" />
   <condition property="certname" value="${env.CERT_NAME}" else="Developer ID Application: Concord Consortium Inc (T8HS8WBPPQ)">
@@ -7,6 +7,7 @@
   </condition>
 
   <taskdef name="bundleapp" classname="com.oracle.appbundler.AppBundlerTask" classpath="lib/appbundler-1.0ea.jar" />
+  <taskdef resource="com/sun/javafx/tools/ant/antlib.xml" uri="javafx:com.sun.javafx.tools.ant" classpath="lib/ant-javafx.jar" />
 
   <target name="clean">
     <delete removeNotFollowedSymlinks="true" followSymlinks="false" includeEmptyDirs="true" failonerror="false">
@@ -21,13 +22,36 @@
   </target>
 
   <target name="build" depends="prep">
-    <exec executable="mvn" failonerror="true">
+    <exec executable="mvn.bat" failonerror="true" osfamily="windows">
       <arg value="-U" />
       <arg value="-DincludeScope=runtime" />
+      <arg value="-Dmdep.useBaseVersion=false" />
       <arg value="clean" />
       <arg value="package" />
       <arg value="dependency:copy-dependencies" />
     </exec>
+    <exec executable="mvn" failonerror="true" osfamily="mac">
+      <arg value="-U" />
+      <arg value="-DincludeScope=runtime" />
+      <arg value="-Dmdep.useBaseVersion=false" />
+      <arg value="clean" />
+      <arg value="package" />
+      <arg value="dependency:copy-dependencies" />
+    </exec>
+  </target>
+
+  <target name="fx-package" depends="build">
+    <fail unless="env.JAVA_HOME" message="You must set JAVA_HOME (eg: 'export JAVA_HOME=`/usr/libexec/java_home`')" />
+    <copy file="target/sensor-server-0.0.1-SNAPSHOT.jar" todir="target/dependency" />
+    <fx:deploy nativeBundles="all" width="100" height="100" outdir="dist/" outfile="SensorServer">
+      <info title="Sensor Server" vendor="Concord Consortium" description="Sensor Server Application" />
+      <fx:application mainClass="org.concord.sensor.server.SensorServer" toolkit="swing"/>
+      <fx:resources>
+        <fx:fileset dir="target/dependency">
+          <include name="**/*.jar" />
+        </fx:fileset>
+      </fx:resources>
+    </fx:deploy>
   </target>
 
   <target name="mac-stage" depends="build">
