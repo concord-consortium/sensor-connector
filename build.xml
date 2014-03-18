@@ -9,9 +9,6 @@
   <taskdef name="bundleapp" classname="com.oracle.appbundler.AppBundlerTask" classpath="lib/appbundler-1.0ea.jar" />
 
   <target name="clean">
-    <exec executable="rm" failonerror="false">
-      <arg value="dist/app/Applications" />
-    </exec>
     <delete removeNotFollowedSymlinks="true" followSymlinks="false" includeEmptyDirs="true" failonerror="false">
       <fileset dir="dist" />
     </delete>
@@ -36,7 +33,6 @@
   <target name="mac-stage" depends="build">
     <fail unless="env.JAVA_HOME" message="You must set JAVA_HOME (eg: 'export JAVA_HOME=`/usr/libexec/java_home`')" />
     <copy file="resources/bg.png" todir="dist/app/.background" />
-    <symlink link="dist/app/Applications" resource="/Applications" overwrite="true" />
     <bundleapp outputdirectory="dist/app"
                name="SensorServer" displayname="Sensor Server"
                executableName="SensorServer"
