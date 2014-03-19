@@ -50,6 +50,9 @@
         <fx:fileset dir="target/dependency">
           <include name="**/*.jar" />
         </fx:fileset>
+        <fx:fileset dir="${env.JAVA_HOME}/jre/bin">
+          <include name="msvcr100.dll" />
+        </fx:fileset>
       </fx:resources>
     </fx:deploy>
   </target>
