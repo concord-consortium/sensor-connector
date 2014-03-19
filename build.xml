@@ -82,6 +82,9 @@
         role="viewer">
       </bundledocument>
     </bundleapp>
+    <exec executable="/usr/libexec/PlistBuddy" dir="dist/app">
+      <arg line='-c "Add LSUIElement String 1" SensorServer.app/Contents/Info.plist' />
+    </exec>
   </target>
 
   <target name="mac-sign">
