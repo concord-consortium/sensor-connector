@@ -61,6 +61,7 @@ class InfoFrame extends JFrame {
 	public InfoFrame(SensorHandler handler) {
 		this.handler = handler;
 
+		setVisible(false);
 		setupBehavior();
 		setupTray();
 		
@@ -109,7 +110,6 @@ class InfoFrame extends JFrame {
 		setTitle("Sensor Server");
 		getContentPane().add(panel, BorderLayout.CENTER);
 		pack();
-		setVisible(true);
 		
 		Timer t = new Timer();
 		t.scheduleAtFixedRate(new TimerTask() {
@@ -185,10 +185,10 @@ class InfoFrame extends JFrame {
         setAlwaysOnTop(true);
         
         // Minimize if the window frame close button is hit
-        setDefaultCloseOperation(JFrame.DO_NOTHING_ON_CLOSE);
+        setDefaultCloseOperation(JFrame.HIDE_ON_CLOSE);
         addWindowListener(new WindowAdapter() {
         	@Override
-            public void windowClosing(WindowEvent e) {
+            public void windowClosed(WindowEvent e) {
         		iconify("Sensor Server", "The sensor server is still running. Right-click and select Exit to shut it down entirely", TrayIcon.MessageType.INFO);
             }
             @Override
@@ -198,6 +198,10 @@ class InfoFrame extends JFrame {
             @Override
             public void windowIconified(WindowEvent e) {
             	iconify();
+            }
+            @Override
+            public void windowDeiconified(WindowEvent e) {
+            	deiconify();
             }
         });
 	}
