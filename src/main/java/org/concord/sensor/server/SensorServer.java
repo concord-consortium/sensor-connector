@@ -2,6 +2,7 @@ package org.concord.sensor.server;
 
 import java.awt.AWTException;
 import java.awt.BorderLayout;
+import java.awt.Color;
 import java.awt.GridLayout;
 import java.awt.Image;
 import java.awt.MenuItem;
@@ -41,7 +42,7 @@ public class SensorServer extends JFrame
         InfoFrame infoFrame = new InfoFrame(handler);
         
         // Minimize to tray (Windows)/title bar (OS X) after starting
-        infoFrame.iconify("Sensor Server", "The sensor server is running in the background. To exit, right-click this icon and select 'Exit'.", TrayIcon.MessageType.INFO);
+        infoFrame.iconify("The sensor server is running in the background. To exit, right-click this icon and select 'Exit'.", TrayIcon.MessageType.INFO);
 
         // TODO Add status, sensor info to tray/title bar menu or tooltip?
     }
@@ -57,6 +58,8 @@ class InfoFrame extends JFrame {
 	private MenuItem hideItem;
 
 	private TrayIcon trayIcon;
+
+	private boolean locallyDispatchedClose = false;
 
 	public InfoFrame(SensorHandler handler) {
 		this.handler = handler;
@@ -75,18 +78,21 @@ class InfoFrame extends JFrame {
 	}
 
 	public void iconify() {
-    	setExtendedState(JFrame.ICONIFIED);
-    	setVisible(false);
+		locallyDispatchedClose  = true;
 		toggleMenuItems(false);
+    	dispatchEvent(new WindowEvent(this, WindowEvent.WINDOW_CLOSING));
 	}
 	
-	public void iconify(String title, String message, TrayIcon.MessageType messageType) {
+	public void iconify(String message, TrayIcon.MessageType messageType) {
 		iconify();
 		
-		trayIcon.displayMessage(title, message, messageType);
+		trayIcon.displayMessage(null, message, messageType);
 	}
 
 	private void setupContent() {
+		setBackground(Color.WHITE);
+		setTitle("Sensor Server");
+
 		final JPanel panel = new JPanel(new GridLayout(0, 2, 5, 5));
 		panel.setBorder(BorderFactory.createEmptyBorder(2,2,2,2));
 		
@@ -107,7 +113,6 @@ class InfoFrame extends JFrame {
 		panel.add(readingLabel);
 		panel.add(readingValue);
 		
-		setTitle("Sensor Server");
 		getContentPane().add(panel, BorderLayout.CENTER);
 		pack();
 		
@@ -115,6 +120,7 @@ class InfoFrame extends JFrame {
 		t.scheduleAtFixedRate(new TimerTask() {
 			@Override
 			public void run() {
+				if (!isVisible()) { return; }
 				// Update the status, last polled values, units
 				statusValue.setText(handler.getCurrentState());
 				String[] units = handler.getUnits();
@@ -130,6 +136,7 @@ class InfoFrame extends JFrame {
 				}
 				readingValue.setText(reading);
 				panel.revalidate();
+				panel.repaint();
 			}
 		}, 0, 500);
 	}
@@ -186,22 +193,25 @@ class InfoFrame extends JFrame {
         
         // Minimize if the window frame close button is hit
         setDefaultCloseOperation(JFrame.HIDE_ON_CLOSE);
+        setResizable(false);
+        addWindowStateListener(new WindowAdapter() {
+        	@Override
+        	public void windowStateChanged(WindowEvent e) {
+        		if (e.getNewState() == JFrame.ICONIFIED) {
+        			iconify();
+        		} else if (e.getNewState() == JFrame.NORMAL) {
+        			deiconify();
+        		}
+        	}
+        });
         addWindowListener(new WindowAdapter() {
         	@Override
-            public void windowClosed(WindowEvent e) {
-        		iconify("Sensor Server", "The sensor server is still running. Right-click and select Exit to shut it down entirely", TrayIcon.MessageType.INFO);
-            }
-            @Override
-            public void windowOpened(WindowEvent e) {
-            	deiconify();
-            }
-            @Override
-            public void windowIconified(WindowEvent e) {
-            	iconify();
-            }
-            @Override
-            public void windowDeiconified(WindowEvent e) {
-            	deiconify();
+            public void windowClosing(WindowEvent e) {
+        		if (!locallyDispatchedClose) {
+        			toggleMenuItems(false);
+        			trayIcon.displayMessage(null, "The sensor server is still running. Right-click and select Exit to shut it down entirely", TrayIcon.MessageType.INFO);
+        		}
+        		locallyDispatchedClose = false;
             }
         });
 	}
