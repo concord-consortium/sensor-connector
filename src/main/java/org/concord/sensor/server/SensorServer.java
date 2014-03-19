@@ -137,9 +137,10 @@ class InfoFrame extends JFrame {
 	private void setupTray() {
 		if (SystemTray.isSupported()) {
 			final SystemTray tray = SystemTray.getSystemTray();
-			Image image = Toolkit.getDefaultToolkit().getImage(this.getClass().getResource("/cc-lightbulb_16x16.png"));
+			Image image = Toolkit.getDefaultToolkit().getImage(this.getClass().getResource("/cc-lightbulb_64x64.png"));
 			PopupMenu popup = new PopupMenu();
 			trayIcon = new TrayIcon(image, "Sensor Server", popup);
+			trayIcon.setImageAutoSize(true);
 
 			showItem = new MenuItem("Show");
 			hideItem = new MenuItem("Hide");
