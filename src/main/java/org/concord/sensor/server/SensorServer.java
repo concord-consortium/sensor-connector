@@ -82,6 +82,7 @@ class InfoFrame extends JFrame {
 	public void iconify(String title, String message, TrayIcon.MessageType messageType) {
 		iconify();
 		
+		trayIcon.displayMessage(title, message, messageType);
 	}
 
 	private void setupContent() {
