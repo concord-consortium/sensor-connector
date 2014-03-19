@@ -85,6 +85,12 @@
     <exec executable="/usr/libexec/PlistBuddy" dir="dist/app">
       <arg line='-c "Add LSUIElement String 1" SensorServer.app/Contents/Info.plist' />
     </exec>
+    <exec executable="/usr/libexec/PlistBuddy" dir="dist/app">
+      <arg line='-c "Add LSUIPresentationMode String 4" SensorServer.app/Contents/Info.plist' />
+    </exec>
+    <exec executable="/usr/libexec/PlistBuddy" dir="dist/app">
+      <arg line='-c "Add LSMultipleInstancesProhibited Boolean true" SensorServer.app/Contents/Info.plist' />
+    </exec>
   </target>
 
   <target name="mac-sign">
