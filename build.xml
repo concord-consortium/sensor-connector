@@ -89,7 +89,7 @@
       <arg line='-c "Add LSUIPresentationMode String 4" SensorServer.app/Contents/Info.plist' />
     </exec>
     <exec executable="/usr/libexec/PlistBuddy" dir="dist/app">
-      <arg line='-c "Add LSMultipleInstancesProhibited Boolean true" SensorServer.app/Contents/Info.plist' />
+      <arg line='-c "Add LSMultipleInstancesProhibited bool true" SensorServer.app/Contents/Info.plist' />
     </exec>
   </target>
 

@@ -198,7 +198,7 @@ class InfoFrame extends JFrame {
         	@Override
         	public void windowStateChanged(WindowEvent e) {
         		if (e.getNewState() == JFrame.ICONIFIED) {
-        			iconify();
+        			iconify(); // FIXME This doesn't hide the dock window on OS X...
         		} else if (e.getNewState() == JFrame.NORMAL) {
         			deiconify();
         		}
