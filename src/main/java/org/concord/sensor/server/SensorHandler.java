@@ -167,4 +167,13 @@ public class SensorHandler extends AbstractHandler implements DataSink {
 		collections.add(new DataCollection(config));
 	}
 
+	public String[] getUnits() {
+		if (collections.size() > 0) {
+			DataCollection dataCollection = collections.get(collections.size()-1);
+			return dataCollection.getUnits();
+		} else {
+			return new String[] {};
+		}
+	}
+
 }

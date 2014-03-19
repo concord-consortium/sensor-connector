@@ -157,4 +157,17 @@ public class DataCollection {
 			lastPolledData[i] = 0;
 		}
 	}
+
+	public String[] getUnits() {
+		if (sensorConfigs.size() > 0) {
+			String[] units = new String[sensorConfigs.size()];
+			for (int i = 0; i < sensorConfigs.size(); i++) {
+				SensorConfig config = sensorConfigs.get(i);
+				units[i] = config.getUnit();
+			}
+			return units;
+		} else {
+			return new String[] {};
+		}
+	}
 }
