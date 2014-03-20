@@ -25,6 +25,7 @@
     <exec executable="mvn.bat" failonerror="true" osfamily="windows">
       <arg value="-U" />
       <arg value="-DincludeScope=runtime" />
+      <arg value='-DexcludeClassifiers="linux-x86,linux-x86_64,linux-arm,windows-x86_64,osx-x86,osx-x86_64"' />
       <arg value="-Dmdep.useBaseVersion=false" />
       <arg value="clean" />
       <arg value="package" />
@@ -33,6 +34,7 @@
     <exec executable="mvn" failonerror="true" osfamily="mac">
       <arg value="-U" />
       <arg value="-DincludeScope=runtime" />
+      <arg value='-DexcludeClassifiers="linux-x86,linux-x86_64,linux-arm,windows-x86,windows-x86_64,osx-x86"' />
       <arg value="-Dmdep.useBaseVersion=false" />
       <arg value="clean" />
       <arg value="package" />
