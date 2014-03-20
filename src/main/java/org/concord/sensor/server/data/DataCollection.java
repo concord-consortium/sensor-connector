@@ -7,6 +7,7 @@ import net.minidev.json.JSONObject;
 
 import org.concord.sensor.ExperimentConfig;
 import org.concord.sensor.SensorConfig;
+import org.concord.sensor.SensorDefaults;
 import org.concord.sensor.device.impl.SensorConfigImpl;
 
 public class DataCollection {
@@ -141,6 +142,7 @@ public class DataCollection {
 	public void updateSensors(ExperimentConfig config) {
 		SensorConfig[] configs = config.getSensorConfigs();
 		dt = config.getPeriod();
+		if (dt == 0) { dt = SensorDefaults.PERIOD; }
 		sensorConfigs = new ArrayList<SensorConfig>();
 
 		// fake time sensor so we can properly export time column values

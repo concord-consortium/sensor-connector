@@ -13,6 +13,7 @@ import org.apache.log4j.Logger;
 import org.concord.sensor.ExperimentConfig;
 import org.concord.sensor.ExperimentRequest;
 import org.concord.sensor.SensorConfig;
+import org.concord.sensor.SensorDefaults;
 import org.concord.sensor.SensorRequest;
 import org.concord.sensor.device.SensorDevice;
 import org.concord.sensor.device.impl.DeviceConfigImpl;
@@ -453,7 +454,9 @@ public class SensorStateManager {
 		
 		ExperimentRequestImpl request = new ExperimentRequestImpl();
 
-		request.setPeriod(config.getPeriod());
+		float period = config.getPeriod();
+		if (period == 0) { period = SensorDefaults.PERIOD; }
+		request.setPeriod(period);
 		request.setNumberOfSamples(-1);
 
 		request.setSensorRequests(sensors);
