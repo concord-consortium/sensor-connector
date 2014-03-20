@@ -29,6 +29,8 @@ import org.eclipse.jetty.server.Server;
 public class SensorServer extends JFrame
 {
 	private static final long serialVersionUID = 1L;
+	static final String MAC_EXIT_TEXT = "To exit, click this icon and select 'Exit'.";
+	static final String WIN_EXIT_TEXT = "To exit, right-click this icon and select 'Exit'.";
 
 	public static void main( String[] args ) throws Exception
     {
@@ -42,12 +44,15 @@ public class SensorServer extends JFrame
         InfoFrame infoFrame = new InfoFrame(handler);
         
         // Minimize to tray (Windows)/title bar (OS X) after starting
-        infoFrame.iconify("The sensor server is running in the background. To exit, right-click this icon and select 'Exit'.", TrayIcon.MessageType.INFO);
+    	String exitText = isMac() ? MAC_EXIT_TEXT : WIN_EXIT_TEXT;
+    	infoFrame.iconify("The sensor server is running in the background. " + exitText, TrayIcon.MessageType.INFO);
 
         // TODO Add status, sensor info to tray/title bar menu or tooltip?
     }
-    
-    
+	
+	static boolean isMac() {
+		return System.getProperty("os.name").toLowerCase().startsWith("mac");
+	}
 }
 
 class InfoFrame extends JFrame {
@@ -209,7 +214,8 @@ class InfoFrame extends JFrame {
             public void windowClosing(WindowEvent e) {
         		if (!locallyDispatchedClose) {
         			toggleMenuItems(false);
-        			trayIcon.displayMessage(null, "The sensor server is still running. Right-click and select Exit to shut it down entirely", TrayIcon.MessageType.INFO);
+        	    	String exitText = SensorServer.isMac() ? SensorServer.MAC_EXIT_TEXT : SensorServer.WIN_EXIT_TEXT;
+        			trayIcon.displayMessage(null, "The sensor server is still running. " + exitText, TrayIcon.MessageType.INFO);
         		}
         		locallyDispatchedClose = false;
             }
