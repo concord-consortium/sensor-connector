@@ -10,6 +10,7 @@ import java.util.concurrent.TimeUnit;
 
 import org.apache.log4j.LogManager;
 import org.apache.log4j.Logger;
+import org.concord.sensor.DeviceFinder;
 import org.concord.sensor.ExperimentConfig;
 import org.concord.sensor.ExperimentRequest;
 import org.concord.sensor.SensorConfig;
@@ -229,11 +230,13 @@ public class SensorStateManager {
 		actions.put("connect", new Action() {
 			@Override
 			public void doAction(Event message, Entity entity, Transition transition, int actionType) throws TransitionRollbackException, TransitionFailureException, InterruptedException {
-				// TODO Scan to see which devices are connected, and then connect with that device type
 				Runnable r = new Runnable() {
 					public void run() {
+						// Scan to see which devices are connected, and then connect with that device type
+						int[] types = DeviceFinder.getAttachedDeviceTypes();
+						int chosenType = (types.length > 0 ? types[0] : DeviceID.VERNIER_GO_LINK_JNA);
 						logger.debug("Creating device: " + Thread.currentThread().getName());
-						device = deviceFactory.createDevice(new DeviceConfigImpl(DeviceID.VERNIER_GO_LINK_JNA, null));
+						device = deviceFactory.createDevice(new DeviceConfigImpl(chosenType, null));
 						
 						// Check if we're attached
 						logger.debug("Checking attached: " + Thread.currentThread().getName());
