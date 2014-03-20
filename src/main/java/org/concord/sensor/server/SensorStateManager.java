@@ -283,12 +283,21 @@ public class SensorStateManager {
 				datasink.startNewCollection(getDeviceConfig());
 				
 				Runnable r2 = new Runnable() {
+					private int errorCount = 0;
 					@Override
 					public void run() {
 						try {
 							readSingleValue();
 						} catch (Exception e) {
+							errorCount++;
 							logger.error("Failed to read data from the device!", e);
+							if (errorCount > 5) {
+								try {
+									stateMachine.applyEvent(new DisconnectEvent());
+								} catch (FiniteStateException | InterruptedException e1) {
+									logger.error("Failed to transition to DISCONNECTED!", e);
+								}
+							}
 						}
 					}
 					
