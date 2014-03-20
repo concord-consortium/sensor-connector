@@ -24,6 +24,9 @@ import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 
+import org.apache.log4j.BasicConfigurator;
+import org.apache.log4j.Level;
+import org.apache.log4j.Logger;
 import org.eclipse.jetty.server.Server;
 
 public class SensorServer extends JFrame
@@ -34,6 +37,9 @@ public class SensorServer extends JFrame
 
 	public static void main( String[] args ) throws Exception
     {
+		BasicConfigurator.configure();
+		Logger.getLogger("org.concord.sensor").setLevel(Level.ERROR);
+
     	SensorHandler handler = new SensorHandler();
     	// 11180 seems unassigned, high enough to not be privileged
     	// Attach only to localhost (for now), to avoid any firewall popups
