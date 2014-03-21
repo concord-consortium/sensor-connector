@@ -1,6 +1,5 @@
 package org.concord.sensor;
 
-import org.concord.sensor.device.impl.DeviceFinder;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
