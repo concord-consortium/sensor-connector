@@ -10,7 +10,6 @@ import java.util.concurrent.TimeUnit;
 
 import org.apache.log4j.LogManager;
 import org.apache.log4j.Logger;
-import org.concord.sensor.DeviceFinder;
 import org.concord.sensor.ExperimentConfig;
 import org.concord.sensor.ExperimentRequest;
 import org.concord.sensor.SensorConfig;
@@ -18,6 +17,7 @@ import org.concord.sensor.SensorDefaults;
 import org.concord.sensor.SensorRequest;
 import org.concord.sensor.device.SensorDevice;
 import org.concord.sensor.device.impl.DeviceConfigImpl;
+import org.concord.sensor.device.impl.DeviceFinder;
 import org.concord.sensor.device.impl.DeviceID;
 import org.concord.sensor.device.impl.JavaDeviceFactory;
 import org.concord.sensor.device.impl.SensorConfigImpl;
@@ -25,6 +25,7 @@ import org.concord.sensor.impl.ExperimentRequestImpl;
 import org.concord.sensor.impl.Range;
 import org.concord.sensor.impl.SensorRequestImpl;
 import org.concord.sensor.server.data.DataSink;
+import org.usb4java.LibUsbException;
 
 import com.continuent.tungsten.fsm.core.Action;
 import com.continuent.tungsten.fsm.core.Entity;
@@ -56,6 +57,7 @@ public class SensorStateManager {
 
 	private ExperimentConfig reportedConfig = null;
 	private long reportedConfigLoadedAt = 0;
+	private int currentInterfaceType = DeviceID.VERNIER_GO_LINK_JNA;
 	
 	private DataSink datasink;
 
@@ -233,10 +235,19 @@ public class SensorStateManager {
 				Runnable r = new Runnable() {
 					public void run() {
 						// Scan to see which devices are connected, and then connect with that device type
-						int[] types = DeviceFinder.getAttachedDeviceTypes();
-						int chosenType = (types.length > 0 ? types[0] : DeviceID.VERNIER_GO_LINK_JNA);
+						currentInterfaceType = DeviceID.VERNIER_GO_LINK_JNA;
+						try {
+							int[] types = DeviceFinder.getAttachedDeviceTypes();
+							if (types.length > 0) {
+								// Just pick the first interface for now
+								// TODO Give the user the option to choose which one to connect to?
+								currentInterfaceType = types[0];
+							}
+						} catch (LibUsbException e) {
+							logger.error("Failed to enumerate USB devices!", e);
+						}
 						logger.debug("Creating device: " + Thread.currentThread().getName());
-						device = deviceFactory.createDevice(new DeviceConfigImpl(chosenType, null));
+						device = deviceFactory.createDevice(new DeviceConfigImpl(currentInterfaceType, null));
 						
 						// Check if we're attached
 						logger.debug("Checking attached: " + Thread.currentThread().getName());
