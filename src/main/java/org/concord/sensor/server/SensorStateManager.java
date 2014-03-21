@@ -118,6 +118,10 @@ public class SensorStateManager {
 		return stateMachine.getState();
 	}
 	
+	public String currentInterface() {
+		return DeviceFinder.getDeviceName(currentInterfaceType);
+	}
+	
 	private StateTransitionMap generateStateTransitionMap() throws FiniteStateException {
 		initializeActions();
 		StateTransitionMap map = new StateTransitionMap();

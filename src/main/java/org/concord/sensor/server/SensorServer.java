@@ -108,15 +108,20 @@ class InfoFrame extends JFrame {
 		panel.setBorder(BorderFactory.createEmptyBorder(2,2,2,2));
 		
 		JLabel statusLabel = new JLabel("Status: ");
+		JLabel interfaceLabel = new JLabel("Connected interface: ");
 		JLabel unitsLabel = new JLabel("Units: ");
 		JLabel readingLabel = new JLabel("Current reading: ");
 		
 		final JLabel statusValue = new JLabel(handler.getCurrentState());
+		final JLabel interfaceValue = new JLabel("");
 		final JLabel unitsValue = new JLabel("");
 		final JLabel readingValue = new JLabel("0");
 
 		panel.add(statusLabel);
 		panel.add(statusValue);
+		
+		panel.add(interfaceLabel);
+		panel.add(interfaceValue);
 		
 		panel.add(unitsLabel);
 		panel.add(unitsValue);
@@ -132,20 +137,25 @@ class InfoFrame extends JFrame {
 			@Override
 			public void run() {
 				if (!isVisible()) { return; }
-				// Update the status, last polled values, units
+				// Update the status, interface, last polled values, units
+				interfaceValue.setText(handler.getCurrentInterface());
+				
 				statusValue.setText(handler.getCurrentState());
+				
 				String[] units = handler.getUnits();
 				String unit = "";
 				if (units.length > 1) {
 					unit = units[1];
 				}
 				unitsValue.setText(unit);
+				
 				float[] lastPolledData = handler.getLastPolledData();
 				String reading = "0";
 				if (lastPolledData.length > 1) {
 					reading = "" + lastPolledData[1];
 				}
 				readingValue.setText(reading);
+				
 				panel.revalidate();
 				panel.repaint();
 			}

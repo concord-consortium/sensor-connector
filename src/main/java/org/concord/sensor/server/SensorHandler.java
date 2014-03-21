@@ -180,4 +180,8 @@ public class SensorHandler extends AbstractHandler implements DataSink {
 		}
 	}
 
+	public String getCurrentInterface() {
+		return stateManager.currentInterface();
+	}
+
 }
