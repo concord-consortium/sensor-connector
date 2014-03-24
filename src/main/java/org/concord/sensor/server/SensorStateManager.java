@@ -77,7 +77,9 @@ public class SensorStateManager {
 	public void start() {
 		try {
 			stateMachine.applyEvent(new StartEvent());
-		} catch (FiniteStateException | InterruptedException e) {
+		} catch (FiniteStateException e) {
+			e.printStackTrace();
+		} catch (InterruptedException e) {
 			e.printStackTrace();
 		}
 	}
@@ -85,7 +87,9 @@ public class SensorStateManager {
 	public void stop() {
 		try {
 			stateMachine.applyEvent(new StopEvent());
-		} catch (FiniteStateException | InterruptedException e) {
+		} catch (FiniteStateException e) {
+			e.printStackTrace();
+		} catch (InterruptedException e) {
 			e.printStackTrace();
 		}
 	}
@@ -93,7 +97,9 @@ public class SensorStateManager {
 	public void connect() {
 		try {
 			stateMachine.applyEvent(new ConnectEvent());
-		} catch (FiniteStateException | InterruptedException e) {
+		} catch (FiniteStateException e) {
+			e.printStackTrace();
+		} catch (InterruptedException e) {
 			e.printStackTrace();
 		}
 	}
@@ -101,7 +107,9 @@ public class SensorStateManager {
 	public void disconnect() {
 		try {
 			stateMachine.applyEvent(new DisconnectEvent());
-		} catch (FiniteStateException | InterruptedException e) {
+		} catch (FiniteStateException e) {
+			e.printStackTrace();
+		} catch (InterruptedException e) {
 			e.printStackTrace();
 		}
 	}
@@ -109,7 +117,9 @@ public class SensorStateManager {
 	public void terminate() {
 		try {
 			stateMachine.applyEvent(new TerminateEvent());
-		} catch (FiniteStateException | InterruptedException e) {
+		} catch (FiniteStateException e) {
+			e.printStackTrace();
+		} catch (InterruptedException e) {
 			e.printStackTrace();
 		}
 	}
@@ -313,7 +323,9 @@ public class SensorStateManager {
 							if (errorCount > 5) {
 								try {
 									stateMachine.applyEvent(new DisconnectEvent());
-								} catch (FiniteStateException | InterruptedException e1) {
+								} catch (FiniteStateException e1) {
+									logger.error("Failed to transition to DISCONNECTED!", e);
+								} catch (InterruptedException e1) {
 									logger.error("Failed to transition to DISCONNECTED!", e);
 								}
 							}
@@ -381,7 +393,9 @@ public class SensorStateManager {
 							logger.fatal("Too many collection errors! Stopping device.");
 							try {
 								stateMachine.applyEvent(new StopEvent());
-							} catch (FiniteStateException | InterruptedException e) {
+							} catch (FiniteStateException e) {
+								e.printStackTrace();
+							} catch (InterruptedException e) {
 								e.printStackTrace();
 							}
 						}
@@ -405,7 +419,9 @@ public class SensorStateManager {
 							System.err.println("error starting the device");
 							try {
 								stateMachine.applyEvent(new StopEvent());
-							} catch (FiniteStateException | InterruptedException e) {
+							} catch (FiniteStateException e) {
+								e.printStackTrace();
+							} catch (InterruptedException e) {
 								e.printStackTrace();
 							}
 						}

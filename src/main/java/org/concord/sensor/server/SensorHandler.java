@@ -36,29 +36,23 @@ public class SensorHandler extends AbstractHandler implements DataSink {
 	public void handle(String target, Request baseRequest, HttpServletRequest request, HttpServletResponse response) throws IOException, ServletException {
 		baseRequest.setHandled(true);
 		JSONObject json = new JSONObject();
-		switch (target) {
-		case "/":
-		case "/status":
+
+		if (target.equals("/") || target.equals("/status")) {
 			json.put("sessionID", sessionId);
 			json.put("sessionDesc", "");
 			json.put("requestTimeStamp", System.currentTimeMillis());
 			json.put("columnListTimeStamp", lastCollectionAdded);
 			appendColumnsInfo(json);
 			appendCollectionInfo(json);
-			break;
-		case "/connect":
+		} else if (target.equals("/connect")) {
 			stateManager.connect();
-			break;
-		case "/disconnect":
+		} else if (target.equals("/disconnect")) {
 			stateManager.disconnect();
-			break;
-		case "/control/start":
+		} else if (target.equals("/control/start")) {
 			stateManager.start();
-			break;
-		case "/control/stop":
+		} else if (target.equals("/control/stop")) {
 			stateManager.stop();
-			break;
-		default:
+		} else {
 			Pattern p = Pattern.compile("/columns/(\\d+)");
 			Matcher m = p.matcher(target);
 			if (m.matches()) {
@@ -68,6 +62,7 @@ public class SensorHandler extends AbstractHandler implements DataSink {
 				return;
 			}
 		}
+		
 		json.put("currentState", stateManager.currentState().getName());
 		response.setContentType("application/json");
 		response.setCharacterEncoding("UTF-8");
