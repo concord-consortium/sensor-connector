@@ -24,18 +24,14 @@
   <target name="build" depends="prep">
     <exec executable="mvn.bat" failonerror="true" osfamily="windows">
       <arg value="-U" />
-      <arg value="-DincludeScope=runtime" />
       <arg value='-DexcludeClassifiers="linux-x86,linux-x86_64,linux-arm,windows-x86_64,osx-x86,osx-x86_64"' />
-      <arg value="-Dmdep.useBaseVersion=false" />
       <arg value="clean" />
       <arg value="package" />
       <arg value="dependency:copy-dependencies" />
     </exec>
     <exec executable="mvn" failonerror="true" osfamily="mac">
       <arg value="-U" />
-      <arg value="-DincludeScope=runtime" />
-      <arg value='-DexcludeClassifiers="linux-x86,linux-x86_64,linux-arm,windows-x86,windows-x86_64,osx-x86"' />
-      <arg value="-Dmdep.useBaseVersion=false" />
+      <arg value='-DexcludeClassifiers="linux-x86,linux-x86_64,linux-arm,windows-x86,windows-x86_64,osx-x86_64"' />
       <arg value="clean" />
       <arg value="package" />
       <arg value="dependency:copy-dependencies" />
@@ -60,41 +56,27 @@
   </target>
 
   <target name="mac-stage" depends="build">
-    <fail unless="env.JAVA_HOME" message="You must set JAVA_HOME (eg: 'export JAVA_HOME=`/usr/libexec/java_home`')" />
+    <fail unless="env.JRE_HOME" message="You must set JRE_HOME (eg: 'export JRE_HOME=/System/Library/Frameworks/JavaVM.framework/Versions/CurrentJDK/')" />
     <copy file="resources/bg.png" todir="dist/app/.background" />
-    <bundleapp outputdirectory="dist/app"
-               name="SensorServer" displayname="Sensor Server"
-               executableName="SensorServer"
-               shortversion="1.0" version="1.0.0"
-               icon="resources/cc-lightbulb.icns"
-               identifier="org.concord.sensor.server.SensorServer"
-               mainclassname="org.concord.sensor.server.SensorServer">
-
-      <arch name="x86_64" />
-      <arch name="i386" />
-
-      <runtime dir="${env.JAVA_HOME}" />
-      <classpath dir="target/">
+    <mkdir dir="dist/app/SensorServer.app" />
+    <mkdir dir="dist/app/SensorServer.app/Contents" />
+    <mkdir dir="dist/app/SensorServer.app/Contents/MacOS" />
+    <mkdir dir="dist/app/SensorServer.app/Contents/Resources" />
+    <mkdir dir="dist/app/SensorServer.app/Contents/Java" />
+    <copy file="resources/cc-lightbulb.icns" todir="dist/app/SensorServer.app/Contents/Resources" />
+    <copy file="resources/Info.plist" todir="dist/app/SensorServer.app/Contents" />
+    <copy file="resources/run.sh" todir="dist/app/SensorServer.app/Contents/MacOS" />
+    <chmod perm="a+x" file="dist/app/SensorServer.app/Contents/MacOS/run.sh" />
+    <copy todir="dist/app/SensorServer.app/Contents/Java" flatten="true">
+      <fileset dir="target">
         <include name="**/*.jar" />
-      </classpath>
-
-      <option value="-Xmx512M" name="Xmx" />
-      <option value="-Xms32M" name="Xms" />
-
-      <bundledocument extensions="ccss"
-        icon="resources/cc-lightbulb.icns"
-        name="Sensor Server Doc"
-        role="viewer">
-      </bundledocument>
-    </bundleapp>
-    <exec executable="/usr/libexec/PlistBuddy" dir="dist/app">
-      <arg line='-c "Add LSUIElement String 1" SensorServer.app/Contents/Info.plist' />
+      </fileset>
+    </copy>
+    <exec executable="cp" dir="dist/app/SensorServer.app/Contents/Resources">
+      <arg line="-r ${env.JRE_HOME} jdk" />
     </exec>
-    <exec executable="/usr/libexec/PlistBuddy" dir="dist/app">
-      <arg line='-c "Add LSUIPresentationMode String 4" SensorServer.app/Contents/Info.plist' />
-    </exec>
-    <exec executable="/usr/libexec/PlistBuddy" dir="dist/app">
-      <arg line='-c "Add LSMultipleInstancesProhibited bool true" SensorServer.app/Contents/Info.plist' />
+    <exec executable="bash" dir="dist/app/SensorServer.app/Contents/Resources/jdk/Home">
+      <arg line='-c "ln -s ../ bundle"' />
     </exec>
   </target>
 
