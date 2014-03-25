@@ -82,6 +82,7 @@
 
   <target name="mac-sign">
     <exec executable="codesign" failonerror="false">
+      <arg value="-f" />
       <arg value="--deep" />
       <arg value="-s" />
       <arg value="${certname}" />
@@ -92,6 +93,7 @@
   <target name="mac-package" depends="prep,build,mac-stage,mac-sign">
     <exec executable="./script/create_dmg.sh" />
     <exec executable="codesign" failonerror="false">
+      <arg value="-f" />
       <arg value="-s" />
       <arg value="${certname}" />
       <arg value="dist/sensor_server_installer.dmg" />
