@@ -2,8 +2,24 @@
 <project name="SensorServer" default="build" basedir="." xmlns:fx="javafx:com.sun.javafx.tools.ant">
 
   <property environment="env" />
-  <condition property="certname" value="${env.CERT_NAME}" else="Developer ID Application: Concord Consortium Inc (T8HS8WBPPQ)">
+  <condition property="certname" value="${env.CERT_NAME}">
     <isset property="env.CERT_NAME" />
+  </condition>
+  <condition property="certname" value="Developer ID Application: Concord Consortium Inc (T8HS8WBPPQ)">
+    <and>
+      <os family="mac" />
+      <not>
+        <isset property="certname" />
+      </not>
+    </and>
+  </condition>
+  <condition property="certname" value="Concord Consortium">
+    <and>
+      <os family="windows" />
+      <not>
+        <isset property="certname" />
+      </not>
+    </and>
   </condition>
 
   <taskdef name="bundleapp" classname="com.oracle.appbundler.AppBundlerTask" classpath="lib/appbundler-1.0ea.jar" />
@@ -53,6 +69,9 @@
         </fx:fileset>
       </fx:resources>
     </fx:deploy>
+    <exec executable="signtool.exe" dir="dist/bundles" failonerror="false">
+      <arg line="sign /n '${certname}' /tr http://tsa.starfieldtech.com /td SHA256 /v SensorServer-1.0.msi" />
+    </exec>
   </target>
 
   <target name="mac-stage" depends="build">

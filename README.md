@@ -10,7 +10,13 @@
 #### Windows
 
 - a [**32-bit JDK**](http://www.oracle.com/technetwork/java/javase/overview/index.html) downloaded from Oracle. Java 6 is minimum, Java 7 is OK. Java 8 is untested.
-- the [**WiX Toolset**](http://wixtoolset.org/) (optional - to create an MSI installer)
+- (optional) the [**WiX Toolset**](http://wixtoolset.org/) (to create an MSI installer)
+- (optional) the [Microsoft Windows SDK](http://msdn.microsoft.com/en-US/windows/desktop/aa904949) (to sign the resulting .exe and .msi)
+
+##### Signing (Windows)
+For more info on signing apps and packages on Windows, these step-by-step instructions seem pretty good:
+- [Installing your signing certificate and private key](http://support.godaddy.com/help/article/2698/installing-a-code-signing-certificate-in-windows)
+- [Signing Code with Microsoft Signtool](http://support.godaddy.com/help/article/4778/signing-windows-code-with-microsoft-signtool?locale=en)
 
 #### OS X
 
@@ -25,6 +31,13 @@ After installing the pre-requisites, fire up your terminal. I use Git Bash, but 
 - Make sure the JAVA_HOME environment variable is set to your 32-bit JDK:
 
 `export JAVA_HOME="C:\Program Files (x86)\Java\jdk1.7.0_51"`
+
+- (optional) If you want to sign the .exe, make sure to put signtool.exe on the PATH, and export the following enviroment variables with the name of your signing certificate:
+
+```
+export CERT_NAME="Your Cert's Name"
+
+```
 
 - From the sensor-server root, run in the console:
 
