@@ -603,8 +603,17 @@ public class SensorStateManager {
 			return null;
 		}
 		SensorConfig[] configs = deviceConfig.getSensorConfigs();
-		SensorRequest[] reqs = new SensorRequest[configs.length];
-		for (int i = 0; i < configs.length; i++) {
+		
+		SensorRequest[] reqs;
+		if (deviceConfig.getDeviceName().startsWith("Pasco")) {
+			// Pasco devices report a lot of sensors, but can only collect from one at a time.
+			// Force it to use the first reported sensor.
+			// TODO Maybe we should allow selecting this?
+			reqs = new SensorRequest[1];
+		} else {
+			reqs = new SensorRequest[configs.length];
+		}
+		for (int i = 0; i < reqs.length; i++) {
 			SensorConfigImpl config = (SensorConfigImpl) configs[i];
 			SensorRequestImpl sensorReq = new SensorRequestImpl();
 			Range r = config.getValueRange();
