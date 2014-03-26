@@ -72,7 +72,7 @@ public class DeviceFinder {
 						break;
 					}
 					break;
-				case 0x0000: // Pasco
+				case 0x0945: // Pasco
 					// Right now, we don't differentiate between Pasco USB
 					// devices, so no need to check product ids
 					logger.fine("Found a Pasco!");
