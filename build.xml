@@ -99,6 +99,45 @@
     </exec>
   </target>
 
+  <target name="mac-stage-x64" depends="build">
+    <fail unless="env.JRE_HOME" message="You must set JRE_HOME (eg: 'export JRE_HOME=`/usr/libexec/java_home`')" />
+    <copy file="resources/bg.png" todir="dist/app/.background" />
+    <bundleapp outputdirectory="dist/app"
+               name="SensorServer" displayname="Sensor Server"
+               executableName="SensorServer"
+               shortversion="1.0" version="1.0.0"
+               icon="resources/cc-lightbulb.icns"
+               identifier="org.concord.sensor.server.SensorServer"
+               mainclassname="org.concord.sensor.server.SensorServer">
+
+      <arch name="x86_64" />
+      <arch name="i386" />
+
+      <runtime dir="${env.JRE_HOME}" />
+      <classpath dir="target/">
+        <include name="**/*.jar" />
+      </classpath>
+
+      <option value="-Xmx512M" name="Xmx" />
+      <option value="-Xms32M" name="Xms" />
+
+      <bundledocument extensions="ccss"
+        icon="resources/cc-lightbulb.icns"
+        name="Sensor Server Doc"
+        role="viewer">
+      </bundledocument>
+    </bundleapp>
+    <exec executable="/usr/libexec/PlistBuddy" dir="dist/app">
+      <arg line='-c "Add LSUIElement String 1" SensorServer.app/Contents/Info.plist' />
+    </exec>
+    <exec executable="/usr/libexec/PlistBuddy" dir="dist/app">
+      <arg line='-c "Add LSUIPresentationMode String 4" SensorServer.app/Contents/Info.plist' />
+    </exec>
+    <exec executable="/usr/libexec/PlistBuddy" dir="dist/app">
+      <arg line='-c "Add LSMultipleInstancesProhibited bool true" SensorServer.app/Contents/Info.plist' />
+    </exec>
+  </target>
+
   <target name="mac-sign">
     <exec executable="codesign" failonerror="false">
       <arg value="-f" />
@@ -110,6 +149,16 @@
   </target>
 
   <target name="mac-package" depends="prep,build,mac-stage,mac-sign">
+    <exec executable="./script/create_dmg.sh" />
+    <exec executable="codesign" failonerror="false">
+      <arg value="-f" />
+      <arg value="-s" />
+      <arg value="${certname}" />
+      <arg value="dist/sensor_server_installer.dmg" />
+    </exec>
+  </target>
+
+  <target name="mac-package-x64" depends="prep,build,mac-stage-x64,mac-sign">
     <exec executable="./script/create_dmg.sh" />
     <exec executable="codesign" failonerror="false">
       <arg value="-f" />
