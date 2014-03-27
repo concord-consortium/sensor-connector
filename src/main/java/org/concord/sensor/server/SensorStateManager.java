@@ -618,14 +618,15 @@ public class SensorStateManager {
 			SensorRequestImpl sensorReq = new SensorRequestImpl();
 			Range r = config.getValueRange();
 			if (r == null) { r = new Range(-10000f, 10000f); }
-			configureSensorRequest(sensorReq, 1, r.minimum, r.maximum, config.getPort(), config.getStepSize(), config.getType());
+			configureSensorRequest(sensorReq, 1, r.minimum, r.maximum, config.getPort(), config.getStepSize(), config.getType(), config.getUnit());
 			reqs[i] = sensorReq;
 		}
 		return reqs;
 	}
 
-	private void configureSensorRequest(SensorRequestImpl sensor, int precision, float min, float max, int port, float step, int type) {
+	private void configureSensorRequest(SensorRequestImpl sensor, int precision, float min, float max, int port, float step, int type, String unit) {
 		sensor.setDisplayPrecision(precision);
+		sensor.setUnit(unit);
 		sensor.setRequiredMin(min);
 		sensor.setRequiredMax(max);
 		sensor.setPort(port);
