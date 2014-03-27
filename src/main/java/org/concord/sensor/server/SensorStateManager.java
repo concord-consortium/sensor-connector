@@ -24,6 +24,7 @@ import org.concord.sensor.device.impl.SensorConfigImpl;
 import org.concord.sensor.impl.ExperimentRequestImpl;
 import org.concord.sensor.impl.Range;
 import org.concord.sensor.impl.SensorRequestImpl;
+import org.concord.sensor.impl.SensorUtilJava;
 import org.concord.sensor.server.data.DataSink;
 import org.usb4java.LibUsbException;
 
@@ -348,6 +349,7 @@ public class SensorStateManager {
 			@Override
 			public void doAction(Event message, Entity entity, Transition transition, int actionType) throws TransitionRollbackException, TransitionFailureException, InterruptedException {
 				ExperimentConfig config = getDeviceConfig();
+				ExperimentConfig actualConfig;
 				ExperimentRequest request;
 				try {
 					request = generateExperimentRequest(config);
@@ -355,7 +357,9 @@ public class SensorStateManager {
 					throw new TransitionFailureException(e1.getMessage(), message, entity, transition, actionType, null);
 				}
 				try {
-					device.configure(request);
+					actualConfig = device.configure(request);
+					numSensors = actualConfig.getSensorConfigs().length;
+					SensorUtilJava.printExperimentConfig(actualConfig);
 				} catch (RuntimeException e) {
 					// force re-getting the currently attached sensors and try it again
 					Thread.sleep(1000);
@@ -365,8 +369,13 @@ public class SensorStateManager {
 					} catch (Exception e1) {
 						throw new TransitionFailureException(e1.getMessage(), message, entity, transition, actionType, null);
 					}
-					device.configure(request);
+					actualConfig = device.configure(request);
+					numSensors = actualConfig.getSensorConfigs().length;
+					SensorUtilJava.printExperimentConfig(actualConfig);
 				}
+				
+				// Make sure the sensor list is accurate in the datasink before we start collecting data
+				datasink.setLastPolledData(actualConfig, datasink.getLastPolledData());
 
 				final float[] data = new float[1024];
 				final Runnable r = new Runnable() {
@@ -529,7 +538,9 @@ public class SensorStateManager {
 
 		final ExperimentConfig config = getDeviceConfig();
 		ExperimentRequest request = generateExperimentRequest(config);
-		device.configure(request);
+		final ExperimentConfig actualConfig = device.configure(request);
+		numSensors = actualConfig.getSensorConfigs().length;
+		SensorUtilJava.printExperimentConfig(actualConfig);
 
 		Runnable start = new Runnable() {
 			public void run() {
@@ -581,7 +592,7 @@ public class SensorStateManager {
 				numSensors = 0;
 			}
 			logger.debug("Returning data: " + Arrays.toString(data));
-			datasink.setLastPolledData(config, data);
+			datasink.setLastPolledData(actualConfig, data);
 			return;
 		} finally {
 			r = new Runnable() {
