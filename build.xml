@@ -2,6 +2,7 @@
 <project name="SensorServer" default="build" basedir="." xmlns:fx="javafx:com.sun.javafx.tools.ant">
 
   <property environment="env" />
+  <tstamp/>
   <condition property="certname" value="${env.CERT_NAME}">
     <isset property="env.CERT_NAME" />
   </condition>
@@ -72,6 +73,7 @@
     <exec executable="signtool.exe" dir="dist/bundles" failonerror="false">
       <arg line="sign /n '${certname}' /tr http://tsa.starfieldtech.com /td SHA256 /v SensorServer-1.0.msi" />
     </exec>
+    <move file="dist/bundles/SensorServer-1.0.msi" tofile="dist/SensorServer-${DSTAMP}-1.msi" />
   </target>
 
   <target name="mac-stage" depends="build">
@@ -156,6 +158,7 @@
       <arg value="${certname}" />
       <arg value="dist/sensor_server_installer.dmg" />
     </exec>
+    <move file="dist/sensor_server_installer.dmg" tofile="dist/SensorServer-${DSTAMP}-1.dmg" />
   </target>
 
   <target name="mac-package-x64" depends="prep,build,mac-stage-x64,mac-sign">
@@ -166,6 +169,7 @@
       <arg value="${certname}" />
       <arg value="dist/sensor_server_installer.dmg" />
     </exec>
+    <move file="dist/sensor_server_installer.dmg" tofile="dist/SensorServer-x64-${DSTAMP}-1.dmg" />
   </target>
 
 
