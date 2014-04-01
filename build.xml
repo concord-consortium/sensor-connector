@@ -47,7 +47,7 @@
     </exec>
     <exec executable="mvn" failonerror="true" osfamily="mac">
       <arg value="-U" />
-      <arg value='-DexcludeClassifiers="linux-x86,linux-x86_64,linux-arm,windows-x86,windows-x86_64,osx-x86_64"' />
+      <arg value='-DexcludeClassifiers="linux-x86,linux-x86_64,linux-arm,windows-x86,windows-x86_64"' />
       <arg value="clean" />
       <arg value="package" />
       <arg value="dependency:copy-dependencies" />
