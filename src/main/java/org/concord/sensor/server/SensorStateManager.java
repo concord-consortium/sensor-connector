@@ -24,7 +24,6 @@ import org.concord.sensor.device.impl.SensorConfigImpl;
 import org.concord.sensor.impl.ExperimentRequestImpl;
 import org.concord.sensor.impl.Range;
 import org.concord.sensor.impl.SensorRequestImpl;
-import org.concord.sensor.impl.SensorUtilJava;
 import org.concord.sensor.server.data.DataSink;
 import org.usb4java.LibUsbException;
 
@@ -359,7 +358,7 @@ public class SensorStateManager {
 				try {
 					actualConfig = device.configure(request);
 					numSensors = actualConfig.getSensorConfigs().length;
-					SensorUtilJava.printExperimentConfig(actualConfig);
+//					SensorUtilJava.printExperimentConfig(actualConfig);
 				} catch (RuntimeException e) {
 					// force re-getting the currently attached sensors and try it again
 					Thread.sleep(1000);
@@ -371,7 +370,7 @@ public class SensorStateManager {
 					}
 					actualConfig = device.configure(request);
 					numSensors = actualConfig.getSensorConfigs().length;
-					SensorUtilJava.printExperimentConfig(actualConfig);
+//					SensorUtilJava.printExperimentConfig(actualConfig);
 				}
 				
 				// Make sure the sensor list is accurate in the datasink before we start collecting data.
@@ -414,7 +413,7 @@ public class SensorStateManager {
 					}
 				};
 				numErrors = 0;
-				long interval = (long) Math.floor(config.getDataReadPeriod() * 1000);
+				long interval = (long) Math.floor(actualConfig.getDataReadPeriod() * 1000);
 				if (interval <= 0) {
 					interval = 100;
 				}
@@ -543,7 +542,13 @@ public class SensorStateManager {
 		ExperimentRequest request = generateExperimentRequest(config);
 		final ExperimentConfig actualConfig = device.configure(request);
 		numSensors = actualConfig.getSensorConfigs().length;
-		SensorUtilJava.printExperimentConfig(actualConfig);
+//		SensorUtilJava.printExperimentConfig(actualConfig);
+		
+		long interval = (long) Math.floor(actualConfig.getDataReadPeriod() * 1000);
+		if (interval <= 0) {
+			interval = 100;
+		}
+		final long adjustedInterval = interval;
 
 		Runnable start = new Runnable() {
 			public void run() {
@@ -574,7 +579,7 @@ public class SensorStateManager {
 							// some devices (ex: GoIO) report -1 samples to indicate an error, or
 							// will just report 0 samples continuously after being unplugged
 							numErrors++;
-							Thread.sleep((int)(1000 * config.getDataReadPeriod()));
+							Thread.sleep(adjustedInterval);
 						}
 					} catch (Exception e) {
 						numErrors++;
@@ -618,15 +623,7 @@ public class SensorStateManager {
 		}
 		SensorConfig[] configs = deviceConfig.getSensorConfigs();
 		
-		SensorRequest[] reqs;
-		if (configs.length > 1 && deviceConfig.getDeviceName().startsWith("Pasco")) {
-			// Pasco devices report a lot of sensors, but can only collect from one at a time.
-			// Force it to use the first reported sensor.
-			// TODO Maybe we should allow selecting this?
-			reqs = new SensorRequest[1];
-		} else {
-			reqs = new SensorRequest[configs.length];
-		}
+		SensorRequest[] reqs = new SensorRequest[configs.length];
 		for (int i = 0; i < reqs.length; i++) {
 			SensorConfigImpl config = (SensorConfigImpl) configs[i];
 			SensorRequestImpl sensorReq = new SensorRequestImpl();
