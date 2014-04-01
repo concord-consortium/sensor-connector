@@ -374,8 +374,11 @@ public class SensorStateManager {
 					SensorUtilJava.printExperimentConfig(actualConfig);
 				}
 				
-				// Make sure the sensor list is accurate in the datasink before we start collecting data
-				datasink.setLastPolledData(actualConfig, datasink.getLastPolledData());
+				// Make sure the sensor list is accurate in the datasink before we start collecting data.
+				// When getting the last polled data, strip off the first value since that's the time value.
+				float[] lastPolled = datasink.getLastPolledData();
+				float[] strippedLastPolled = Arrays.copyOfRange(lastPolled, 1, lastPolled.length);
+				datasink.setLastPolledData(actualConfig, strippedLastPolled);
 
 				final float[] data = new float[1024];
 				final Runnable r = new Runnable() {
