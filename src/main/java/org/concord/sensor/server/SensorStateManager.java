@@ -503,7 +503,9 @@ public class SensorStateManager {
 		float period = config.getPeriod();
 		if (config instanceof ExperimentConfigImpl) {
 			Range r = ((ExperimentConfigImpl) config).getPeriodRange();
-			period = r.minimum;
+			if (r != null) {
+				period = r.minimum;
+			}
 		}
 		if (period == 0) { period = SensorDefaults.PERIOD; }
 		request.setPeriod(period);
