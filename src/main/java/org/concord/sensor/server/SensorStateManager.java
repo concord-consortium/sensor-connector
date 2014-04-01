@@ -21,6 +21,7 @@ import org.concord.sensor.device.impl.DeviceConfigImpl;
 import org.concord.sensor.device.impl.DeviceID;
 import org.concord.sensor.device.impl.JavaDeviceFactory;
 import org.concord.sensor.device.impl.SensorConfigImpl;
+import org.concord.sensor.impl.ExperimentConfigImpl;
 import org.concord.sensor.impl.ExperimentRequestImpl;
 import org.concord.sensor.impl.Range;
 import org.concord.sensor.impl.SensorRequestImpl;
@@ -500,6 +501,10 @@ public class SensorStateManager {
 		ExperimentRequestImpl request = new ExperimentRequestImpl();
 
 		float period = config.getPeriod();
+		if (config instanceof ExperimentConfigImpl) {
+			Range r = ((ExperimentConfigImpl) config).getPeriodRange();
+			period = r.minimum;
+		}
 		if (period == 0) { period = SensorDefaults.PERIOD; }
 		request.setPeriod(period);
 		request.setNumberOfSamples(-1);
