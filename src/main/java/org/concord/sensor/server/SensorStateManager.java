@@ -26,6 +26,7 @@ import org.concord.sensor.impl.ExperimentRequestImpl;
 import org.concord.sensor.impl.Range;
 import org.concord.sensor.impl.SensorRequestImpl;
 import org.concord.sensor.server.data.DataSink;
+import org.concord.sensor.vernier.labquest.LabQuestSensorDevice;
 import org.usb4java.LibUsbException;
 
 import com.continuent.tungsten.fsm.core.Action;
@@ -552,6 +553,12 @@ public class SensorStateManager {
 		final ExperimentConfig config = getDeviceConfig();
 		ExperimentRequest request = generateExperimentRequest(config);
 		final ExperimentConfig actualConfig = device.configure(request);
+		
+		if (device instanceof LabQuestSensorDevice && !device.isAttached()) {
+			// Something dramatic happened during configure. Bail.
+			// I've seen this when all sensors get unplugged from the LabQuest after getting opened with sensors plugged in.
+			throw new Exception("Device is no longer attached!");
+		}
 		
 		SensorConfig[] sensorConfigs = actualConfig.getSensorConfigs();
 		if (sensorConfigs == null) {
