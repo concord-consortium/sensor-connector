@@ -121,6 +121,9 @@ public class DataCollection {
 	
 	private boolean hasSameSensors(ExperimentConfig config) {
 		SensorConfig[] sensors = config.getSensorConfigs();
+		if (sensors == null) {
+			sensors = new SensorConfig[] {};
+		}
 		if (sensors.length != sensorConfigs.size()-1) {
 			return false;
 		}
@@ -141,6 +144,9 @@ public class DataCollection {
 
 	public void updateSensors(ExperimentConfig config) {
 		SensorConfig[] configs = config.getSensorConfigs();
+		if (configs == null) {
+			configs = new SensorConfig[] {};
+		}
 		dt = config.getPeriod();
 		if (dt == 0) { dt = SensorDefaults.PERIOD; }
 		sensorConfigs = new ArrayList<SensorConfig>();
@@ -151,6 +157,7 @@ public class DataCollection {
 		timeConfig.setName("Time");
 		sensorConfigs.add(timeConfig); // Time is always the 0-index sensor
 		sensorConfigs.addAll(Arrays.asList(configs));
+
 		sensorsData = new ArrayList<ArrayList<Float>>();
 		
 		lastPolledData = new float[sensorConfigs.size()];

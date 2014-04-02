@@ -370,7 +370,11 @@ public class SensorStateManager {
 						throw new TransitionFailureException(e1.getMessage(), message, entity, transition, actionType, null);
 					}
 					actualConfig = device.configure(request);
-					numSensors = actualConfig.getSensorConfigs().length;
+					SensorConfig[] sensorConfigs = actualConfig.getSensorConfigs();
+					if (sensorConfigs == null) {
+						throw new TransitionFailureException("No sensors attached! Can't collect data.", message, entity, transition, actionType, null);
+					}
+					numSensors = sensorConfigs.length;
 //					SensorUtilJava.printExperimentConfig(actualConfig);
 				}
 				
@@ -548,7 +552,12 @@ public class SensorStateManager {
 		final ExperimentConfig config = getDeviceConfig();
 		ExperimentRequest request = generateExperimentRequest(config);
 		final ExperimentConfig actualConfig = device.configure(request);
-		numSensors = actualConfig.getSensorConfigs().length;
+		
+		SensorConfig[] sensorConfigs = actualConfig.getSensorConfigs();
+		if (sensorConfigs == null) {
+			throw new Exception("No sensors attached to device!");
+		}
+		numSensors = sensorConfigs.length;
 //		SensorUtilJava.printExperimentConfig(actualConfig);
 		
 		long interval = (long) Math.floor(actualConfig.getDataReadPeriod() * 1000);
@@ -625,10 +634,10 @@ public class SensorStateManager {
 	}
 	
 	private SensorRequest[] getSensorsFromCurrentConfig(ExperimentConfig deviceConfig) {
-		if (deviceConfig == null || deviceConfig.getSensorConfigs() == null) {
-			return null;
+		SensorConfig[] configs;
+		if (deviceConfig == null || (configs = deviceConfig.getSensorConfigs()) == null) {
+			return new SensorRequest[] {};
 		}
-		SensorConfig[] configs = deviceConfig.getSensorConfigs();
 		
 		SensorRequest[] reqs = new SensorRequest[configs.length];
 		for (int i = 0; i < reqs.length; i++) {
