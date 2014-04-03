@@ -29,6 +29,8 @@ public class SensorHandler extends AbstractHandler implements DataSink {
 			stateManager = new SensorStateManager(this);
 		} catch (FiniteStateException e) {
 			e.printStackTrace();
+		} catch (Exception e) {
+			e.printStackTrace();
 		}
 	}
 

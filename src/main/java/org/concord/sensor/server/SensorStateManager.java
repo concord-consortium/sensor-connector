@@ -151,12 +151,13 @@ public class SensorStateManager {
 		map.addState(connectedCollecting);
 		map.addState(finished);
 		
-		// Thebn, define the transitions between states
+		// Then, define the transitions between states
 		EventTypeGuard startGuard = new EventTypeGuard(StartEvent.class);
 		EventTypeGuard stopGuard = new EventTypeGuard(StopEvent.class);
 		EventTypeGuard connectGuard = new EventTypeGuard(ConnectEvent.class);
 		EventTypeGuard disconnectGuard = new EventTypeGuard(DisconnectEvent.class);
 		EventTypeGuard terminateGuard = new EventTypeGuard(TerminateEvent.class);
+		EventTypeGuard errorGuard = new EventTypeGuard(ErrorEvent.class);
 		
 		Transition init2disco = new Transition("INITIALIZING-TO-DISCONNECTED", new PositiveGuard(), initializing, actions.get("initialize"), disconnectedNormal);
 		Transition disco2connected = new Transition("DISCONNECTED-TO-CONNECTED", connectGuard, disconnectedNormal, null, connectedPolling);
@@ -167,8 +168,8 @@ public class SensorStateManager {
 		Transition collecting2disconnected = new Transition("COLLECTING-TO-DISCONNECTED", disconnectGuard, connectedCollecting, null, disconnectedNormal);
 		Transition polling2disconnected = new Transition("POLLING-TO-DISCONNECTED", disconnectGuard, connectedPolling, null, disconnectedNormal);
 		
-		Transition connected2error = new Transition("CONNECTED-TO-ERROR", new PositiveGuard(), connected, null, disconnectedError);
-		Transition disconnected2error = new Transition("DISCONNECTED-TO-ERROR", new PositiveGuard(), disconnected, null, disconnectedError);
+		Transition connected2error = new Transition("CONNECTED-TO-ERROR", errorGuard, connected, null, disconnectedError);
+		Transition disconnected2error = new Transition("DISCONNECTED-TO-ERROR", errorGuard, disconnected, null, disconnectedError);
 		
 		Transition connected2finished = new Transition("CONNECTED-TO-FINISHED", terminateGuard, connected, null, finished);
 		Transition disconnected2finished = new Transition("DISCONNECTED-TO-FINISHED", terminateGuard, disconnected, null, finished);
@@ -337,85 +338,96 @@ public class SensorStateManager {
 
 		actions.put("startCollecting", new Action() {
 			@Override
-			public void doAction(Event message, Entity entity, Transition transition, int actionType) throws TransitionRollbackException, TransitionFailureException, InterruptedException {
-				ExperimentConfig config = getDeviceConfig();
-				ExperimentConfig actualConfig;
-				ExperimentRequest request;
-				try {
-					request = generateExperimentRequest(config);
-				} catch (Exception e1) {
-					throw new TransitionFailureException(e1.getMessage(), message, entity, transition, actionType, null);
-				}
-				try {
-					actualConfig = device.configure(request);
-					numSensors = actualConfig.getSensorConfigs().length;
-//					SensorUtilJava.printExperimentConfig(actualConfig);
-				} catch (RuntimeException e) {
-					// force re-getting the currently attached sensors and try it again
-					Thread.sleep(1000);
-					config = getDeviceConfig(true);
-					try {
-						request = generateExperimentRequest(config);
-					} catch (Exception e1) {
-						throw new TransitionFailureException(e1.getMessage(), message, entity, transition, actionType, null);
-					}
-					actualConfig = device.configure(request);
-					SensorConfig[] sensorConfigs = actualConfig.getSensorConfigs();
-					if (sensorConfigs == null) {
-						throw new TransitionFailureException("No sensors attached! Can't collect data.", message, entity, transition, actionType, null);
-					}
-					numSensors = sensorConfigs.length;
-//					SensorUtilJava.printExperimentConfig(actualConfig);
-				}
-				
-				// Make sure the sensor list is accurate in the datasink before we start collecting data.
-				// When getting the last polled data, strip off the first value since that's the time value.
-				float[] lastPolled = datasink.getLastPolledData();
-				float[] strippedLastPolled = Arrays.copyOfRange(lastPolled, 1, lastPolled.length);
-				datasink.setLastPolledData(actualConfig, strippedLastPolled);
-
-				final float[] data = new float[1024];
-				final Runnable r = new Runnable() {
+			public void doAction(final Event message, final Entity entity, final Transition transition, final int actionType) throws TransitionRollbackException, TransitionFailureException, InterruptedException {
+				Runnable start = new Runnable() {
 					public void run() {
+						ExperimentConfig config = getDeviceConfig();
+						ExperimentConfig actualConfig;
+						ExperimentRequest request;
 						try {
-							int numSamples = device.read(data, 0, numSensors, null);
-							if (numSamples > 0) {
-								float[] dataCopy = new float[numSamples * numSensors];
-								System.arraycopy(data, 0, dataCopy, 0, numSamples * numSensors);
-								datasink.appendCollectedData(numSamples, dataCopy);
-
-								numErrors = 0;
-							} else {
-								// some devices (ex: GoIO) report -1 samples to indicate an error, or
-								// will just report 0 samples continuously after being unplugged
-								numErrors++;
-							}
-						} catch (Exception e) {
-							numErrors++;
-							logger.fatal("Error reading data from device!", e);
-						}
-						if (numErrors >= MAX_READ_ERRORS) {
-							numErrors = 0;
-							logger.fatal("Too many collection errors! Stopping device.");
+							request = generateExperimentRequest(config);
+						} catch (Exception e1) {
 							try {
-								stateMachine.applyEvent(new StopEvent());
-							} catch (FiniteStateException e) {
-								e.printStackTrace();
+								dispatcher.putOutOfBand(new ErrorEvent(e1.getMessage()));
 							} catch (InterruptedException e) {
 								e.printStackTrace();
 							}
+							return;
 						}
-					}
-				};
-				numErrors = 0;
-				long interval = (long) Math.floor(actualConfig.getDataReadPeriod() * 1000);
-				if (interval <= 0) {
-					interval = 100;
-				}
-				final long adjustedInterval = interval;
+						try {
+							actualConfig = device.configure(request);
+							numSensors = actualConfig.getSensorConfigs().length;
+//							SensorUtilJava.printExperimentConfig(actualConfig);
+						} catch (RuntimeException e) {
+							// force re-getting the currently attached sensors and try it again
+							try {
+								Thread.sleep(1000);
+								config = getDeviceConfig(true);
+								request = generateExperimentRequest(config);
+							} catch (Exception e1) {
+								try {
+									dispatcher.putOutOfBand(new ErrorEvent(e1.getMessage()));
+								} catch (InterruptedException e2) {
+									e2.printStackTrace();
+								}
+							}
+							actualConfig = device.configure(request);
+							SensorConfig[] sensorConfigs = actualConfig.getSensorConfigs();
+							if (sensorConfigs == null) {
+								try {
+									dispatcher.putOutOfBand(new ErrorEvent("No sensors attached! Can't collect data."));
+								} catch (InterruptedException e2) {
+									e2.printStackTrace();
+								}
+								return;
+							}
+							numSensors = sensorConfigs.length;
+//							SensorUtilJava.printExperimentConfig(actualConfig);
+						}
+						
+						// Make sure the sensor list is accurate in the datasink before we start collecting data.
+						// When getting the last polled data, strip off the first value since that's the time value.
+						float[] lastPolled = datasink.getLastPolledData();
+						float[] strippedLastPolled = Arrays.copyOfRange(lastPolled, 1, lastPolled.length);
+						datasink.setLastPolledData(actualConfig, strippedLastPolled);
 
-				Runnable start = new Runnable() {
-					public void run() {
+						final float[] data = new float[1024];
+						final Runnable r = new Runnable() {
+							public void run() {
+								try {
+									int numSamples = device.read(data, 0, numSensors, null);
+									if (numSamples > 0) {
+										float[] dataCopy = new float[numSamples * numSensors];
+										System.arraycopy(data, 0, dataCopy, 0, numSamples * numSensors);
+										datasink.appendCollectedData(numSamples, dataCopy);
+
+										numErrors = 0;
+									} else {
+										// some devices (ex: GoIO) report -1 samples to indicate an error, or
+										// will just report 0 samples continuously after being unplugged
+										numErrors++;
+									}
+								} catch (Exception e) {
+									numErrors++;
+									logger.fatal("Error reading data from device!", e);
+								}
+								if (numErrors >= MAX_READ_ERRORS) {
+									numErrors = 0;
+									logger.fatal("Too many collection errors! Stopping device.");
+									try {
+										dispatcher.put(new StopEvent());
+									} catch (InterruptedException e) {
+										e.printStackTrace();
+									}
+								}
+							}
+						};
+						numErrors = 0;
+						long interval = (long) Math.floor(actualConfig.getDataReadPeriod() * 1000);
+						if (interval <= 0) {
+							interval = 100;
+						}
+						final long adjustedInterval = interval;
 						boolean deviceIsRunning = device.start();
 						if(deviceIsRunning) {
 							System.out.println("started device");
@@ -483,12 +495,12 @@ public class SensorStateManager {
 		});
 	}
 
-	private ExperimentRequest generateExperimentRequest(ExperimentConfig config) throws Exception {
-		if (config == null) { throw new Exception("Couldn't fetch config from device! Restarting..."); }
+	private ExperimentRequest generateExperimentRequest(ExperimentConfig config) {
+		if (config == null) { throw new RuntimeException("Couldn't fetch config from device! Restarting..."); }
 
 		SensorRequest[] sensors = getSensorsFromCurrentConfig(config);
 		numSensors = sensors.length;
-		if (sensors == null || numSensors < 1) { throw new Exception("No sensors attached! Restarting...");  }
+		if (sensors == null || numSensors < 1) { throw new RuntimeException("No sensors attached! Restarting...");  }
 		
 		ExperimentRequestImpl request = new ExperimentRequestImpl();
 
@@ -532,46 +544,43 @@ public class SensorStateManager {
 
 	private int numErrors = 0;
 	private int numSensors = 0;
-	private void readSingleValue() throws Exception {
-		// There's probably a more efficient way of doing this.
-		// GoIO devices, for instance, support one-shot data collection.
-		// Perhaps other devices do as well?
-
-		final ExperimentConfig config = getDeviceConfig();
-		ExperimentRequest request = generateExperimentRequest(config);
-		final ExperimentConfig actualConfig = device.configure(request);
-		
-		if (device instanceof LabQuestSensorDevice && !device.isAttached()) {
-			// Something dramatic happened during configure. Bail.
-			// I've seen this when all sensors get unplugged from the LabQuest after getting opened with sensors plugged in.
-			throw new Exception("Device is no longer attached!");
-		}
-		
-		SensorConfig[] sensorConfigs = actualConfig.getSensorConfigs();
-		if (sensorConfigs == null) {
-			throw new Exception("No sensors attached to device!");
-		}
-		numSensors = sensorConfigs.length;
-//		SensorUtilJava.printExperimentConfig(actualConfig);
-		
-		long interval = (long) Math.floor(actualConfig.getDataReadPeriod() * 1000);
-		if (interval <= 0) {
-			interval = 100;
-		}
-		final long adjustedInterval = interval;
-
-		Runnable start = new Runnable() {
-			public void run() {
-				logger.debug("starting device");
-				device.start();
-			}
-		};
-		execute(start, 0);
-
-		final float[] buffer = new float[1024];
-		final float[] data = new float[numSensors];
+	private long adjustedInterval = 100;
+	private ExperimentConfig actualConfig;
+	private float[] data;
+	private void readSingleValue() {
 		Runnable r = new Runnable() {
 			public void run() {
+				// There's probably a more efficient way of doing this.
+				// GoIO devices, for instance, support one-shot data collection.
+				// Perhaps other devices do as well?
+				float[] buffer = new float[1024];
+				ExperimentConfig config = getDeviceConfig();
+				ExperimentRequest request = generateExperimentRequest(config);
+				actualConfig = device.configure(request);
+				
+				if (device instanceof LabQuestSensorDevice && !device.isAttached()) {
+					// Something dramatic happened during configure. Bail.
+					// I've seen this when all sensors get unplugged from the LabQuest after getting opened with sensors plugged in.
+					throw new RuntimeException("Device is no longer attached!");
+				}
+				
+				SensorConfig[] sensorConfigs = actualConfig.getSensorConfigs();
+				if (sensorConfigs == null) {
+					throw new RuntimeException("No sensors attached to device!");
+				}
+				numSensors = sensorConfigs.length;
+		//		SensorUtilJava.printExperimentConfig(actualConfig);
+				
+				data = new float[numSensors];
+				
+				int interval = (int) Math.floor(actualConfig.getDataReadPeriod() * 1000);
+				if (interval <= 0) {
+					interval = 100;
+				}
+				adjustedInterval = interval;
+
+				logger.debug("starting device");
+				device.start();
 				int numCollected = 0;
 				while (numErrors < MAX_READ_ERRORS && numCollected < 1) {
 					logger.debug("Trying to read data from the device...");
@@ -623,6 +632,11 @@ public class SensorStateManager {
 			if (!executeAndWait(r)) {
 				// try closing and re-opening the device
 				logger.fatal("Stopping had errors! Closing and re-opening.");
+				try {
+					dispatcher.putOutOfBand(new ErrorEvent("No sensors attached! Can't collect data."));
+				} catch (InterruptedException e2) {
+					e2.printStackTrace();
+				}
 			}
 		}
 	}
@@ -704,6 +718,11 @@ public class SensorStateManager {
 	private class TerminateEvent extends Event {
 		public TerminateEvent() {
 			super(null);
+		}
+	}
+	private class ErrorEvent extends Event {
+		public ErrorEvent(String message) {
+			super(message);
 		}
 	}
 }

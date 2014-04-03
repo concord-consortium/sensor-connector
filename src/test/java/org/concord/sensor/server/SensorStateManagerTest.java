@@ -31,7 +31,7 @@ public class SensorStateManagerTest {
 	 * @throws InterruptedException
 	 */
 	@Test
-	public void canInstantiate() throws FiniteStateException, InterruptedException {
+	public void canInstantiate() throws FiniteStateException, InterruptedException, Exception {
 		BasicConfigurator.configure();
 		LogManager.getLogger("org.concord.sensor").setLevel(Level.TRACE);
 		
