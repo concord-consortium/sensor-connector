@@ -64,6 +64,11 @@ public class DataCollection {
 	}
 	
 	public void setLastPolledData(float[] data) {
+		if ((data.length+1) != sensorConfigs.size()) {
+			// the number of returned values and the number of sensors differ!
+			return;
+		}
+
 		for (int i = 0; i < data.length; i++) {
 			lastPolledData[i+1] = data[i];
 		}
