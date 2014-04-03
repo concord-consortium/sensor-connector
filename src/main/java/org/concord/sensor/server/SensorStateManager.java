@@ -42,9 +42,11 @@ import com.continuent.tungsten.fsm.core.StateType;
 import com.continuent.tungsten.fsm.core.Transition;
 import com.continuent.tungsten.fsm.core.TransitionFailureException;
 import com.continuent.tungsten.fsm.core.TransitionRollbackException;
+import com.continuent.tungsten.fsm.event.EventDispatcherTask;
 
 public class SensorStateManager {
 	private StateMachine stateMachine;
+	private EventDispatcherTask dispatcher;
 	private final HashMap<String, Action> actions = new HashMap<String, Action>();
 
 	private final static Logger logger = LogManager.getLogger(SensorStateManager.class.getName());
@@ -63,24 +65,21 @@ public class SensorStateManager {
 	
 	private DataSink datasink;
 
-	public SensorStateManager(DataSink datasink) throws FiniteStateException {
+	public SensorStateManager(DataSink datasink) throws FiniteStateException, Exception {
 		this.datasink = datasink;
 		StateTransitionMap map = generateStateTransitionMap();
 		Entity sensorEntity = new Entity(){};
 		stateMachine = new StateMachine(map, sensorEntity);
-		try {
-			// Trigger the transition to DISCONNECTED:NORMAL
-			stateMachine.applyEvent(new Event(null));
-		} catch (InterruptedException e) {
-			e.printStackTrace();
-		}
+		dispatcher = new EventDispatcherTask(stateMachine);
+		dispatcher.start("state-machine-dispatcher");
+		
+		// Trigger the transition to DISCONNECTED:NORMAL
+		dispatcher.put(new Event(null));
 	}
 
 	public void start() {
 		try {
-			stateMachine.applyEvent(new StartEvent());
-		} catch (FiniteStateException e) {
-			e.printStackTrace();
+			dispatcher.put(new StartEvent());
 		} catch (InterruptedException e) {
 			e.printStackTrace();
 		}
@@ -88,9 +87,7 @@ public class SensorStateManager {
 
 	public void stop() {
 		try {
-			stateMachine.applyEvent(new StopEvent());
-		} catch (FiniteStateException e) {
-			e.printStackTrace();
+			dispatcher.put(new StopEvent());
 		} catch (InterruptedException e) {
 			e.printStackTrace();
 		}
@@ -98,9 +95,7 @@ public class SensorStateManager {
 
 	public void connect() {
 		try {
-			stateMachine.applyEvent(new ConnectEvent());
-		} catch (FiniteStateException e) {
-			e.printStackTrace();
+			dispatcher.put(new ConnectEvent());
 		} catch (InterruptedException e) {
 			e.printStackTrace();
 		}
@@ -108,9 +103,7 @@ public class SensorStateManager {
 
 	public void disconnect() {
 		try {
-			stateMachine.applyEvent(new DisconnectEvent());
-		} catch (FiniteStateException e) {
-			e.printStackTrace();
+			dispatcher.put(new DisconnectEvent());
 		} catch (InterruptedException e) {
 			e.printStackTrace();
 		}
@@ -118,9 +111,7 @@ public class SensorStateManager {
 	
 	public void terminate() {
 		try {
-			stateMachine.applyEvent(new TerminateEvent());
-		} catch (FiniteStateException e) {
-			e.printStackTrace();
+			dispatcher.put(new TerminateEvent());
 		} catch (InterruptedException e) {
 			e.printStackTrace();
 		}
@@ -324,9 +315,7 @@ public class SensorStateManager {
 							logger.error("Failed to read data from the device!", e);
 							if (errorCount > 5) {
 								try {
-									stateMachine.applyEvent(new DisconnectEvent());
-								} catch (FiniteStateException e1) {
-									logger.error("Failed to transition to DISCONNECTED!", e);
+									dispatcher.put(new DisconnectEvent());
 								} catch (InterruptedException e1) {
 									logger.error("Failed to transition to DISCONNECTED!", e);
 								}
@@ -435,9 +424,7 @@ public class SensorStateManager {
 							// we should send a notification here that something went wrong
 							System.err.println("error starting the device");
 							try {
-								stateMachine.applyEvent(new StopEvent());
-							} catch (FiniteStateException e) {
-								e.printStackTrace();
+								dispatcher.put(new StopEvent());
 							} catch (InterruptedException e) {
 								e.printStackTrace();
 							}
