@@ -25,6 +25,7 @@ public class SensorHandler extends AbstractHandler implements DataSink {
 	private final String sessionId;
 	public SensorHandler() {
 		sessionId = UUID.randomUUID().toString();
+		startNewCollection(null);
 		try {
 			stateManager = new SensorStateManager(this);
 		} catch (FiniteStateException e) {

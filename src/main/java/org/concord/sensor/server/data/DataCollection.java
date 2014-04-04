@@ -125,7 +125,7 @@ public class DataCollection {
 	}
 	
 	private boolean hasSameSensors(ExperimentConfig config) {
-		SensorConfig[] sensors = config.getSensorConfigs();
+		SensorConfig[] sensors = (config == null ? null : config.getSensorConfigs());
 		if (sensors == null) {
 			sensors = new SensorConfig[] {};
 		}
@@ -148,11 +148,11 @@ public class DataCollection {
 	}
 
 	public void updateSensors(ExperimentConfig config) {
-		SensorConfig[] configs = config.getSensorConfigs();
+		SensorConfig[] configs = (config == null ? null : config.getSensorConfigs());
 		if (configs == null) {
 			configs = new SensorConfig[] {};
 		}
-		dt = config.getPeriod();
+		dt = (config == null ? SensorDefaults.PERIOD : config.getPeriod());
 		if (dt == 0) { dt = SensorDefaults.PERIOD; }
 		sensorConfigs = new ArrayList<SensorConfig>();
 
