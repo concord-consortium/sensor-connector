@@ -122,6 +122,9 @@ public class SensorStateManager {
 	}
 	
 	public String currentInterface() {
+		if (currentInterfaceType == -1) {
+			return "No Devices Connected";
+		}
 		return DeviceFinder.getDeviceName(currentInterfaceType);
 	}
 	
@@ -243,7 +246,7 @@ public class SensorStateManager {
 				Runnable r = new Runnable() {
 					public void run() {
 						// Scan to see which devices are connected, and then connect with that device type
-						currentInterfaceType = DeviceID.VERNIER_GO_LINK_JNA;
+						currentInterfaceType = -1;
 						try {
 							int[] types = DeviceFinder.getAttachedDeviceTypes();
 							if (types.length > 0) {
@@ -254,6 +257,12 @@ public class SensorStateManager {
 						} catch (LibUsbException e) {
 							logger.error("Failed to enumerate USB devices!", e);
 						}
+						
+						if (currentInterfaceType == -1) {
+							// No devices found. Fail transition to go back to disconnected.
+							throw new RuntimeException("No devices found!");
+						}
+
 						logger.debug("Creating device: " + Thread.currentThread().getName());
 						device = deviceFactory.createDevice(new DeviceConfigImpl(currentInterfaceType, null));
 						
