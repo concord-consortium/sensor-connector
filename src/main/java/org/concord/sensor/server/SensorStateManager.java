@@ -235,6 +235,7 @@ public class SensorStateManager {
 			public void doAction(Event message, Entity entity, Transition transition, int actionType) throws TransitionRollbackException, TransitionFailureException, InterruptedException {
 				// make sure we've destroyed any prior sessions
 				actions.get("terminate").doAction(message, entity, transition, actionType);
+				Thread.sleep(1000); // Wait for a second before trying again
 				actions.get("initialize").doAction(message, entity, transition, actionType);
 				actions.get("transitionToConnect").doAction(message, entity, transition, actionType);
 			}
