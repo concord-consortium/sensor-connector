@@ -45,6 +45,7 @@ public class SensorHandler extends AbstractHandler implements DataSink {
 			json.put("sessionDesc", "");
 			json.put("requestTimeStamp", System.currentTimeMillis());
 			json.put("columnListTimeStamp", lastCollectionAdded);
+			json.put("currentInterface", stateManager.currentInterface());
 			appendColumnsInfo(json);
 			appendCollectionInfo(json);
 		} else if (target.equals("/connect")) {

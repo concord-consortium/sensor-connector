@@ -123,7 +123,7 @@ public class SensorStateManager {
 	
 	public String currentInterface() {
 		if (currentInterfaceType == -1) {
-			return "No Devices Connected";
+			return "None Found";
 		}
 		return DeviceFinder.getDeviceName(currentInterfaceType);
 	}
