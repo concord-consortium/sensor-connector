@@ -3,7 +3,8 @@ package org.concord.sensor.server;
 import java.awt.AWTException;
 import java.awt.BorderLayout;
 import java.awt.Color;
-import java.awt.GridLayout;
+import java.awt.GridBagConstraints;
+import java.awt.GridBagLayout;
 import java.awt.Image;
 import java.awt.MenuItem;
 import java.awt.PopupMenu;
@@ -16,6 +17,7 @@ import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
+import java.util.Arrays;
 import java.util.Timer;
 import java.util.TimerTask;
 
@@ -104,8 +106,24 @@ class InfoFrame extends JFrame {
 		setBackground(Color.WHITE);
 		setTitle("Sensor Server");
 
-		final JPanel panel = new JPanel(new GridLayout(0, 2, 5, 5));
+		final JPanel panel = new JPanel(new GridBagLayout());
 		panel.setBorder(BorderFactory.createEmptyBorder(2,2,2,2));
+		
+		GridBagConstraints leftCol = new GridBagConstraints();
+		leftCol.gridx = 0;
+		leftCol.gridy = GridBagConstraints.RELATIVE;
+		leftCol.anchor = GridBagConstraints.CENTER;
+		leftCol.fill = GridBagConstraints.HORIZONTAL;
+		leftCol.ipadx = 2;
+		leftCol.ipady = 2;
+		
+		GridBagConstraints rightCol = new GridBagConstraints();
+		rightCol.gridx = 1;
+		rightCol.gridy = GridBagConstraints.RELATIVE;
+		rightCol.anchor = GridBagConstraints.CENTER;
+		rightCol.fill = GridBagConstraints.HORIZONTAL;
+		rightCol.ipadx = 2;
+		rightCol.ipady = 2;
 		
 		JLabel statusLabel = new JLabel("Status: ");
 		JLabel interfaceLabel = new JLabel("Connected interface: ");
@@ -117,23 +135,41 @@ class InfoFrame extends JFrame {
 		final JLabel unitsValue = new JLabel("");
 		final JLabel readingValue = new JLabel("0");
 
-		panel.add(statusLabel);
-		panel.add(statusValue);
+		panel.add(statusLabel, leftCol);
+		panel.add(statusValue, rightCol);
 		
-		panel.add(interfaceLabel);
-		panel.add(interfaceValue);
+		panel.add(interfaceLabel, leftCol);
+		panel.add(interfaceValue, rightCol);
 		
-		panel.add(unitsLabel);
-		panel.add(unitsValue);
+		panel.add(unitsLabel, leftCol);
+		panel.add(unitsValue, rightCol);
 		
-		panel.add(readingLabel);
-		panel.add(readingValue);
+		panel.add(readingLabel, leftCol);
+		panel.add(readingValue, rightCol);
 		
 		getContentPane().add(panel, BorderLayout.CENTER);
 		pack();
 		
 		Timer t = new Timer();
 		t.scheduleAtFixedRate(new TimerTask() {
+			private String join(float[] values) {
+				String str = "";
+				for (float v : values) {
+					str += String.format("%.2f, ", v);
+				}
+				str = str.substring(0, str.length() - 2);
+				return str;
+			}
+			
+			private String join(Object[] values) {
+				String str = "";
+				for (Object v : values) {
+					str += v.toString() + ", ";
+				}
+				str = str.substring(0, str.length() - 2);
+				return str;
+			}
+
 			@Override
 			public void run() {
 				if (!isVisible()) { return; }
@@ -143,19 +179,14 @@ class InfoFrame extends JFrame {
 				statusValue.setText(handler.getCurrentState());
 				
 				String[] units = handler.getUnits();
-				String unit = "";
-				if (units.length > 1) {
-					unit = units[1];
-				}
+				String unit = join(Arrays.copyOfRange(units, 1, units.length)); // strip off the first value, which is the time column
 				unitsValue.setText(unit);
 				
 				float[] lastPolledData = handler.getLastPolledData();
-				String reading = "0";
-				if (lastPolledData.length > 1) {
-					reading = "" + lastPolledData[1];
-				}
+				String reading = join(Arrays.copyOfRange(lastPolledData, 1, lastPolledData.length)); // strip off the first value, which is the time column
 				readingValue.setText(reading);
 				
+				pack();
 				panel.revalidate();
 				panel.repaint();
 			}
