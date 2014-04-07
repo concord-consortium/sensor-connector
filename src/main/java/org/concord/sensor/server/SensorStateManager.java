@@ -622,7 +622,10 @@ public class SensorStateManager {
 		};
 		try {
 			numErrors = 0;
-			executeAndWait(r, 10);
+			if (! executeAndWait(r, 10)) {
+				// exception trying to collect data
+				throw new RuntimeException("Error reading single value.");
+			}
 			synchronized (data) {
 				// A no-op, basically, just to ensure this synchronized block
 				// doesn't get optimized away completely.
