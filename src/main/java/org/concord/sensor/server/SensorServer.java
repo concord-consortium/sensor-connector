@@ -154,6 +154,9 @@ class InfoFrame extends JFrame {
 		t.scheduleAtFixedRate(new TimerTask() {
 			private String join(float[] values) {
 				String str = "";
+				if (values.length == 0) {
+					return str;
+				}
 				for (float v : values) {
 					str += String.format("%.2f, ", v);
 				}
@@ -163,8 +166,13 @@ class InfoFrame extends JFrame {
 			
 			private String join(Object[] values) {
 				String str = "";
+				if (values.length == 0) { return str; }
 				for (Object v : values) {
-					str += v.toString() + ", ";
+					if (v != null) {
+						str += v.toString() + ", ";
+					} else {
+						str += ", ";
+					}
 				}
 				str = str.substring(0, str.length() - 2);
 				return str;
