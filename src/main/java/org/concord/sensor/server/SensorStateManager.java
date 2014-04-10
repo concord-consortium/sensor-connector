@@ -437,7 +437,7 @@ public class SensorStateManager {
 						if (interval <= 0) {
 							interval = 100;
 						}
-						final long adjustedInterval = interval;
+						long adjustedInterval = interval;
 						boolean deviceIsRunning = device.start();
 						if(deviceIsRunning) {
 							System.out.println("started device");
