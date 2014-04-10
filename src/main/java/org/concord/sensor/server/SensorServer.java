@@ -65,6 +65,7 @@ public class SensorServer extends JFrame
 
 class InfoFrame extends JFrame {
 	private static final long serialVersionUID = 1L;
+	private static final Logger logger = Logger.getLogger(InfoFrame.class.getName());
 
 	private SensorHandler handler;
 	private MenuItem showItem;
@@ -181,22 +182,26 @@ class InfoFrame extends JFrame {
 			@Override
 			public void run() {
 				if (!isVisible()) { return; }
-				// Update the status, interface, last polled values, units
-				interfaceValue.setText(handler.getCurrentInterface());
-				
-				statusValue.setText(handler.getCurrentState());
-				
-				String[] units = handler.getUnits();
-				String unit = join(Arrays.copyOfRange(units, 1, units.length)); // strip off the first value, which is the time column
-				unitsValue.setText(unit);
-				
-				float[] lastPolledData = handler.getLastPolledData();
-				String reading = join(Arrays.copyOfRange(lastPolledData, 1, lastPolledData.length)); // strip off the first value, which is the time column
-				readingValue.setText(reading);
-				
-				pack();
-				panel.revalidate();
-				panel.repaint();
+				try {
+					// Update the status, interface, last polled values, units
+					interfaceValue.setText(handler.getCurrentInterface());
+					
+					statusValue.setText(handler.getCurrentState());
+					
+					String[] units = handler.getUnits();
+					String unit = join(Arrays.copyOfRange(units, 1, units.length)); // strip off the first value, which is the time column
+					unitsValue.setText(unit);
+					
+					float[] lastPolledData = handler.getLastPolledData();
+					String reading = join(Arrays.copyOfRange(lastPolledData, 1, lastPolledData.length)); // strip off the first value, which is the time column
+					readingValue.setText(reading);
+					
+					pack();
+					panel.revalidate();
+					panel.repaint();
+				} catch (Exception e) {
+					logger.error("Problem updating status window.", e);
+				}
 			}
 		}, 0, 500);
 	}
