@@ -183,4 +183,8 @@ public class SensorHandler extends AbstractHandler implements DataSink {
 		return stateManager.currentInterface();
 	}
 
+	public void shutdown() {
+		stateManager.terminate();
+	}
+
 }

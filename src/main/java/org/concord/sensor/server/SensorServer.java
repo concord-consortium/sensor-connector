@@ -42,10 +42,10 @@ public class SensorServer extends JFrame
 		BasicConfigurator.configure();
 		Logger.getLogger("org.concord.sensor").setLevel(Level.ERROR);
 
-    	SensorHandler handler = new SensorHandler();
+    	final SensorHandler handler = new SensorHandler();
     	// 11180 seems unassigned, high enough to not be privileged
     	// Attach only to localhost (for now), to avoid any firewall popups
-    	Server server = new Server(new InetSocketAddress(InetAddress.getByName(null), 11180));
+    	final Server server = new Server(new InetSocketAddress(InetAddress.getByName(null), 11180));
         server.setHandler(handler);
         server.start();
         
@@ -56,6 +56,17 @@ public class SensorServer extends JFrame
     	infoFrame.iconify("The sensor server is running in the background. " + exitText, TrayIcon.MessageType.INFO);
 
         // TODO Add status, sensor info to tray/title bar menu or tooltip?
+    	
+    	Runtime.getRuntime().addShutdownHook(new Thread() {
+    	    public void run() {
+    	    	try {
+					server.stop();
+    	    		handler.shutdown();
+				} catch (Exception e) {
+					e.printStackTrace();
+				}
+    	    }
+    	});
     }
 	
 	static boolean isMac() {

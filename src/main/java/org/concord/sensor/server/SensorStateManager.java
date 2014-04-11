@@ -112,9 +112,12 @@ public class SensorStateManager {
 	}
 	
 	public void terminate() {
+		// Do this with applyEvent so that control doesn't return until the transition is complete.
 		try {
-			dispatcher.put(new TerminateEvent());
+			stateMachine.applyEvent(new TerminateEvent());
 		} catch (InterruptedException e) {
+			e.printStackTrace();
+		} catch (FiniteStateException e) {
 			e.printStackTrace();
 		}
 	}
@@ -503,6 +506,8 @@ public class SensorStateManager {
 				} catch (InterruptedException e) {
 					e.printStackTrace();
 				}
+				dispatcher.stop();
+				dispatcher = null;
 				executor = null;
 				executorThreadName = null;
 				deviceFactory = null;
