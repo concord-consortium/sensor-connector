@@ -23,6 +23,10 @@
     </and>
   </condition>
 
+  <condition property="jre" value="${env.JRE_HOME}">
+    <isset property="env.JRE_HOME" />
+  </condition>
+
   <taskdef name="bundleapp" classname="com.oracle.appbundler.AppBundlerTask" classpath="lib/appbundler-1.0ea.jar" />
   <taskdef resource="com/sun/javafx/tools/ant/antlib.xml" uri="javafx:com.sun.javafx.tools.ant" classpath=".:lib/ant-javafx.jar" />
 
@@ -77,7 +81,12 @@
   </target>
 
   <target name="mac-stage" depends="build">
-    <fail unless="env.JRE_HOME" message="You must set JRE_HOME (eg: 'export JRE_HOME=/System/Library/Frameworks/JavaVM.framework/Versions/CurrentJDK')" />
+    <condition property="jre" value="/System/Library/Frameworks/JavaVM.framework/Versions/CurrentJDK">
+      <not>
+        <isset property="jre" />
+      </not>
+    </condition>
+    <echo message="JRE: ${jre}\nSet JRE_HOME to override!" />
     <copy file="resources/bg.png" todir="dist/app/.background" />
     <mkdir dir="dist/app/SensorServer.app" />
     <mkdir dir="dist/app/SensorServer.app/Contents" />
@@ -94,7 +103,7 @@
       </fileset>
     </copy>
     <exec executable="cp" dir="dist/app/SensorServer.app/Contents/Resources">
-      <arg line="-r ${env.JRE_HOME} jdk" />
+      <arg line="-r ${jre} jdk" />
     </exec>
     <exec executable="bash" dir="dist/app/SensorServer.app/Contents/Resources/jdk/Home">
       <arg line='-c "ln -s ../ bundle"' />
@@ -102,7 +111,13 @@
   </target>
 
   <target name="mac-stage-x64" depends="build">
-    <fail unless="env.JRE_HOME" message="You must set JRE_HOME (eg: 'export JRE_HOME=`/usr/libexec/java_home`')" />
+    <exec executable="/usr/libexec/java_home" outputproperty="system_jre" />
+    <condition property="jre" value="${system_jre}">
+      <not>
+        <isset property="jre" />
+      </not>
+    </condition>
+    <echo message="JRE: ${jre}\nSet JRE_HOME to override!" />
     <copy file="resources/bg.png" todir="dist/app/.background" />
     <bundleapp outputdirectory="dist/app"
                name="SensorServer" displayname="Sensor Server"
@@ -115,7 +130,7 @@
       <arch name="x86_64" />
       <arch name="i386" />
 
-      <runtime dir="${env.JRE_HOME}" />
+      <runtime dir="${jre}" />
       <classpath dir="target/">
         <include name="**/*.jar" />
       </classpath>
