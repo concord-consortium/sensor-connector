@@ -25,6 +25,7 @@ import org.concord.sensor.impl.ExperimentConfigImpl;
 import org.concord.sensor.impl.ExperimentRequestImpl;
 import org.concord.sensor.impl.Range;
 import org.concord.sensor.impl.SensorRequestImpl;
+import org.concord.sensor.pasco.PascoUsbSensorDevice;
 import org.concord.sensor.server.data.DataSink;
 import org.concord.sensor.vernier.labquest.LabQuestSensorDevice;
 import org.usb4java.LibUsbException;
@@ -62,6 +63,7 @@ public class SensorStateManager {
 	private ExperimentConfig reportedConfig = null;
 	private long reportedConfigLoadedAt = 0;
 	private int currentInterfaceType = DeviceID.VERNIER_GO_LINK_JNA;
+	private boolean zeroSamplesIsAnError = true;
 	
 	private DataSink datasink;
 
@@ -415,7 +417,7 @@ public class SensorStateManager {
 									} else {
 										// some devices (ex: GoIO) report -1 samples to indicate an error, or
 										// will just report 0 samples continuously after being unplugged
-										numErrors++;
+										if (numSamples != 0 || zeroSamplesIsAnError) numErrors++;
 									}
 								} catch (Exception e) {
 									numErrors++;
@@ -438,10 +440,13 @@ public class SensorStateManager {
 							interval = 100;
 						}
 						long adjustedInterval = interval;
+						if (device instanceof PascoUsbSensorDevice) {
+							zeroSamplesIsAnError = false;
+						}
 						boolean deviceIsRunning = device.start();
 						if(deviceIsRunning) {
 							System.out.println("started device");
-							collectionTask = executor.scheduleAtFixedRate(r, 10, adjustedInterval, TimeUnit.MILLISECONDS);
+							collectionTask = executor.scheduleAtFixedRate(r, adjustedInterval, adjustedInterval, TimeUnit.MILLISECONDS);
 						} else {
 							// we should send a notification here that something went wrong
 							System.err.println("error starting the device");
@@ -517,11 +522,12 @@ public class SensorStateManager {
 		float period = config.getPeriod();
 		if (config instanceof ExperimentConfigImpl) {
 			Range r = ((ExperimentConfigImpl) config).getPeriodRange();
-			if (r != null) {
+			if (r != null && r.minimum > 0) {
 				period = r.minimum;
 			}
 		}
-		if (period == 0) { period = SensorDefaults.PERIOD; }
+		if (period == 0) { period = SensorDefaults.DEFAULT_PERIOD; }
+		if (period < SensorDefaults.MIN_PERIOD) { period = SensorDefaults.MIN_PERIOD; }
 		request.setPeriod(period);
 		request.setNumberOfSamples(-1);
 
@@ -591,6 +597,17 @@ public class SensorStateManager {
 
 				logger.debug("starting device");
 				device.start();
+
+				if (device instanceof PascoUsbSensorDevice) {
+					zeroSamplesIsAnError = false;
+				}
+
+				try {
+					Thread.sleep(adjustedInterval);
+				} catch (InterruptedException e1) {
+					logger.debug("Interrupted while waiting for device to collect.", e1);
+				}
+				
 				int numCollected = 0;
 				while (numErrors < MAX_READ_ERRORS && numCollected < 1) {
 					logger.debug("Trying to read data from the device...");
@@ -607,7 +624,7 @@ public class SensorStateManager {
 						} else {
 							// some devices (ex: GoIO) report -1 samples to indicate an error, or
 							// will just report 0 samples continuously after being unplugged
-							numErrors++;
+							if (numSamples != 0 || zeroSamplesIsAnError) numErrors++;
 							Thread.sleep(adjustedInterval);
 						}
 					} catch (Exception e) {

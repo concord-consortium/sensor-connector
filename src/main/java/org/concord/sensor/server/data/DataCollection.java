@@ -152,8 +152,8 @@ public class DataCollection {
 		if (configs == null) {
 			configs = new SensorConfig[] {};
 		}
-		dt = (config == null ? SensorDefaults.PERIOD : config.getPeriod());
-		if (dt == 0) { dt = SensorDefaults.PERIOD; }
+		dt = (config == null ? SensorDefaults.DEFAULT_PERIOD : config.getPeriod());
+		if (dt == 0) { dt = SensorDefaults.DEFAULT_PERIOD; }
 		sensorConfigs = new ArrayList<SensorConfig>();
 
 		// fake time sensor so we can properly export time column values
