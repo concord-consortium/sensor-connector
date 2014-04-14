@@ -506,11 +506,13 @@ public class SensorStateManager {
 				} catch (InterruptedException e) {
 					e.printStackTrace();
 				}
-				dispatcher.stop();
-				dispatcher = null;
 				executor = null;
 				executorThreadName = null;
 				deviceFactory = null;
+				if (message instanceof TerminateEvent) {
+					dispatcher.stop();
+					dispatcher = null;
+				}
 			}
 		});
 	}
