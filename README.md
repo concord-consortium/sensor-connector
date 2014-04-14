@@ -1,4 +1,4 @@
-# Sensor Server
+# Sensor Connector
 
 ## Pre-requisites:
 ### All platforms
@@ -39,12 +39,12 @@ export CERT_NAME="Concord Consortium"
 
 ```
 
-- From the sensor-server root, run in the console:
+- From the sensor-connector root, run in the console:
 
 `ant fx-package`
 
-- The **.exe** will be created as `dist/bundles/SensorServer/SensorServer.exe`
-- The **.msi** will be created as `dist/bundles/SensorServer-1.0.msi`
+- The **.exe** will be created as `dist/bundles/SensorConnector/SensorConnector.exe`
+- The **.msi** will be created as `dist/bundles/SensorConnector-{TIMESTAMP}-1.0.msi`
 
 ### OS X (32-bit)
 
@@ -62,12 +62,12 @@ After installing the pre-requisites, fire up your terminal.
 
 `export CERT_NAME="Developer ID Application: Concord Consortium Inc (T8HS8WBPPQ)"`
 
-- From the sensor-server root, run in the console:
+- From the sensor-connector root, run in the console:
 
 `ant mac-package`
 
-- The **application** will be created as `dist/app/SensorServer.app`
-- The **.dmg** with the application will be created as `dist/sensor_server_installer.dmg`
+- The **application** will be created as `dist/app/SensorConnector.app`
+- The **.dmg** with the application will be created as `dist/SensorConnector-{TIMESTAMP}-1.dmg`
 
 ### OS X (64-bit)
 
@@ -85,9 +85,9 @@ After installing the pre-requisites, fire up your terminal.
 
 `export CERT_NAME="Developer ID Application: Concord Consortium Inc (T8HS8WBPPQ)"`
 
-- From the sensor-server root, run in the console:
+- From the sensor-connector root, run in the console:
 
 `ant mac-package`
 
-- The **application** will be created as `dist/app/SensorServer.app`
-- The **.dmg** with the application will be created as `dist/sensor_server_installer.dmg`
+- The **application** will be created as `dist/app/SensorConnector.app`
+- The **.dmg** with the application will be created as `dist/SensorConnector-{TIMESTAMP}-1.dmg`

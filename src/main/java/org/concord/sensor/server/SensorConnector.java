@@ -31,7 +31,7 @@ import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
 import org.eclipse.jetty.server.Server;
 
-public class SensorServer extends JFrame
+public class SensorConnector extends JFrame
 {
 	private static final long serialVersionUID = 1L;
 	static final String MAC_EXIT_TEXT = "To exit, click this icon and select 'Exit'.";
@@ -53,7 +53,7 @@ public class SensorServer extends JFrame
         
         // Minimize to tray (Windows)/title bar (OS X) after starting
     	String exitText = isMac() ? MAC_EXIT_TEXT : WIN_EXIT_TEXT;
-    	infoFrame.iconify("The sensor server is running in the background. " + exitText, TrayIcon.MessageType.INFO);
+    	infoFrame.iconify("The sensor connector is running in the background. " + exitText, TrayIcon.MessageType.INFO);
 
         // TODO Add status, sensor info to tray/title bar menu or tooltip?
     	
@@ -116,7 +116,7 @@ class InfoFrame extends JFrame {
 
 	private void setupContent() {
 		setBackground(Color.WHITE);
-		setTitle("Sensor Server");
+		setTitle("Sensor Connector");
 
 		final JPanel panel = new JPanel(new GridBagLayout());
 		panel.setBorder(BorderFactory.createEmptyBorder(2,2,2,2));
@@ -222,7 +222,7 @@ class InfoFrame extends JFrame {
 			final SystemTray tray = SystemTray.getSystemTray();
 			Image image = Toolkit.getDefaultToolkit().getImage(this.getClass().getResource("/cc-lightbulb_64x64.png"));
 			PopupMenu popup = new PopupMenu();
-			trayIcon = new TrayIcon(image, "Sensor Server", popup);
+			trayIcon = new TrayIcon(image, "Sensor Connector", popup);
 			trayIcon.setImageAutoSize(true);
 
 			showItem = new MenuItem("Show");
@@ -285,8 +285,8 @@ class InfoFrame extends JFrame {
             public void windowClosing(WindowEvent e) {
         		if (!locallyDispatchedClose) {
         			toggleMenuItems(false);
-        	    	String exitText = SensorServer.isMac() ? SensorServer.MAC_EXIT_TEXT : SensorServer.WIN_EXIT_TEXT;
-        			trayIcon.displayMessage(null, "The sensor server is still running. " + exitText, TrayIcon.MessageType.INFO);
+        	    	String exitText = SensorConnector.isMac() ? SensorConnector.MAC_EXIT_TEXT : SensorConnector.WIN_EXIT_TEXT;
+        			trayIcon.displayMessage(null, "The sensor connector is still running. " + exitText, TrayIcon.MessageType.INFO);
         		}
         		locallyDispatchedClose = false;
             }

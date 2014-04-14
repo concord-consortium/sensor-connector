@@ -3,11 +3,11 @@
   <modelVersion>4.0.0</modelVersion>
 
   <groupId>org.concord.sensor</groupId>
-  <artifactId>sensor-server</artifactId>
+  <artifactId>sensor-connector</artifactId>
   <version>0.0.1-SNAPSHOT</version>
   <packaging>jar</packaging>
 
-  <name>sensor-server</name>
+  <name>sensor-connector</name>
   <url>http://maven.apache.org</url>
 
   <properties>
@@ -52,7 +52,7 @@
           <archive>
             <manifest>
               <addClasspath>true</addClasspath>
-              <mainClass>org.concord.sensor.server.SensorServer</mainClass>
+              <mainClass>org.concord.sensor.server.SensorConnector</mainClass>
             </manifest>
           </archive>
         </configuration>

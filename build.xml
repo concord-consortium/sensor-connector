@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<project name="SensorServer" default="build" basedir="." xmlns:fx="javafx:com.sun.javafx.tools.ant">
+<project name="SensorConnector" default="build" basedir="." xmlns:fx="javafx:com.sun.javafx.tools.ant">
 
   <property environment="env" />
   <tstamp/>
@@ -61,10 +61,10 @@
 
   <target name="fx-package" depends="build">
     <fail unless="env.JAVA_HOME" message="You must set JAVA_HOME (eg: 'export JAVA_HOME=`/usr/libexec/java_home`')" />
-    <copy file="target/sensor-server-0.0.1-SNAPSHOT.jar" todir="target/dependency" />
-    <fx:deploy verbose="true" nativeBundles="all" width="100" height="100" outdir="dist/" outfile="SensorServer">
-      <info title="Sensor Server" vendor="Concord Consortium" description="Sensor Server Application" />
-      <fx:application mainClass="org.concord.sensor.server.SensorServer" toolkit="swing"/>
+    <copy file="target/sensor-connector-0.0.1-SNAPSHOT.jar" todir="target/dependency" />
+    <fx:deploy verbose="true" nativeBundles="all" width="100" height="100" outdir="dist/" outfile="SensorConnector">
+      <info title="Sensor Connector" vendor="Concord Consortium" description="Sensor Connector Application" />
+      <fx:application mainClass="org.concord.sensor.server.SensorConnector" toolkit="swing"/>
       <fx:resources>
         <fx:fileset dir="target/dependency">
           <include name="**/*.jar" />
@@ -75,9 +75,9 @@
       </fx:resources>
     </fx:deploy>
     <exec executable="signtool.exe" dir="dist/bundles" failonerror="false">
-      <arg line="sign /n '${certname}' /tr http://tsa.starfieldtech.com /td SHA256 /v SensorServer-1.0.msi" />
+      <arg line="sign /n '${certname}' /tr http://tsa.starfieldtech.com /td SHA256 /v SensorConnector-1.0.msi" />
     </exec>
-    <move file="dist/bundles/SensorServer-1.0.msi" tofile="dist/SensorServer-${DSTAMP}-1.msi" />
+    <move file="dist/bundles/SensorConnector-1.0.msi" tofile="dist/SensorConnector-${DSTAMP}-1.msi" />
   </target>
 
   <target name="mac-stage" depends="build">
@@ -88,24 +88,24 @@
     </condition>
     <echo message="JRE: ${jre}\nSet JRE_HOME to override!" />
     <copy file="resources/bg.png" todir="dist/app/.background" />
-    <mkdir dir="dist/app/SensorServer.app" />
-    <mkdir dir="dist/app/SensorServer.app/Contents" />
-    <mkdir dir="dist/app/SensorServer.app/Contents/MacOS" />
-    <mkdir dir="dist/app/SensorServer.app/Contents/Resources" />
-    <mkdir dir="dist/app/SensorServer.app/Contents/Java" />
-    <copy file="resources/cc-lightbulb.icns" todir="dist/app/SensorServer.app/Contents/Resources" />
-    <copy file="resources/Info.plist" todir="dist/app/SensorServer.app/Contents" />
-    <copy file="resources/run.sh" todir="dist/app/SensorServer.app/Contents/MacOS" />
-    <chmod perm="a+x" file="dist/app/SensorServer.app/Contents/MacOS/run.sh" />
-    <copy todir="dist/app/SensorServer.app/Contents/Java" flatten="true">
+    <mkdir dir="dist/app/SensorConnector.app" />
+    <mkdir dir="dist/app/SensorConnector.app/Contents" />
+    <mkdir dir="dist/app/SensorConnector.app/Contents/MacOS" />
+    <mkdir dir="dist/app/SensorConnector.app/Contents/Resources" />
+    <mkdir dir="dist/app/SensorConnector.app/Contents/Java" />
+    <copy file="resources/cc-lightbulb.icns" todir="dist/app/SensorConnector.app/Contents/Resources" />
+    <copy file="resources/Info.plist" todir="dist/app/SensorConnector.app/Contents" />
+    <copy file="resources/run.sh" todir="dist/app/SensorConnector.app/Contents/MacOS" />
+    <chmod perm="a+x" file="dist/app/SensorConnector.app/Contents/MacOS/run.sh" />
+    <copy todir="dist/app/SensorConnector.app/Contents/Java" flatten="true">
       <fileset dir="target">
         <include name="**/*.jar" />
       </fileset>
     </copy>
-    <exec executable="cp" dir="dist/app/SensorServer.app/Contents/Resources">
+    <exec executable="cp" dir="dist/app/SensorConnector.app/Contents/Resources">
       <arg line="-r ${jre} jdk" />
     </exec>
-    <exec executable="bash" dir="dist/app/SensorServer.app/Contents/Resources/jdk/Home">
+    <exec executable="bash" dir="dist/app/SensorConnector.app/Contents/Resources/jdk/Home">
       <arg line='-c "ln -s ../ bundle"' />
     </exec>
   </target>
@@ -120,12 +120,12 @@
     <echo message="JRE: ${jre}\nSet JRE_HOME to override!" />
     <copy file="resources/bg.png" todir="dist/app/.background" />
     <bundleapp outputdirectory="dist/app"
-               name="SensorServer" displayname="Sensor Server"
-               executableName="SensorServer"
+               name="SensorConnector" displayname="Sensor Connector"
+               executableName="SensorConnector"
                shortversion="1.0" version="1.0.0"
                icon="resources/cc-lightbulb.icns"
-               identifier="org.concord.sensor.server.SensorServer"
-               mainclassname="org.concord.sensor.server.SensorServer">
+               identifier="org.concord.sensor.server.SensorConnector"
+               mainclassname="org.concord.sensor.server.SensorConnector">
 
       <arch name="x86_64" />
       <arch name="i386" />
@@ -140,18 +140,18 @@
 
       <bundledocument extensions="ccss"
         icon="resources/cc-lightbulb.icns"
-        name="Sensor Server Doc"
+        name="Sensor Connector Doc"
         role="viewer">
       </bundledocument>
     </bundleapp>
     <exec executable="/usr/libexec/PlistBuddy" dir="dist/app">
-      <arg line='-c "Add LSUIElement String 1" SensorServer.app/Contents/Info.plist' />
+      <arg line='-c "Add LSUIElement String 1" SensorConnector.app/Contents/Info.plist' />
     </exec>
     <exec executable="/usr/libexec/PlistBuddy" dir="dist/app">
-      <arg line='-c "Add LSUIPresentationMode String 4" SensorServer.app/Contents/Info.plist' />
+      <arg line='-c "Add LSUIPresentationMode String 4" SensorConnector.app/Contents/Info.plist' />
     </exec>
     <exec executable="/usr/libexec/PlistBuddy" dir="dist/app">
-      <arg line='-c "Add LSMultipleInstancesProhibited bool true" SensorServer.app/Contents/Info.plist' />
+      <arg line='-c "Add LSMultipleInstancesProhibited bool true" SensorConnector.app/Contents/Info.plist' />
     </exec>
   </target>
 
@@ -161,7 +161,7 @@
       <arg value="--deep" />
       <arg value="-s" />
       <arg value="${certname}" />
-      <arg value="dist/app/SensorServer.app" />
+      <arg value="dist/app/SensorConnector.app" />
     </exec>
   </target>
 
@@ -171,9 +171,9 @@
       <arg value="-f" />
       <arg value="-s" />
       <arg value="${certname}" />
-      <arg value="dist/sensor_server_installer.dmg" />
+      <arg value="dist/SensorConnector.dmg" />
     </exec>
-    <move file="dist/sensor_server_installer.dmg" tofile="dist/SensorServer-${DSTAMP}-1.dmg" />
+    <move file="dist/SensorConnector.dmg" tofile="dist/SensorConnector-${DSTAMP}-1.dmg" />
   </target>
 
   <target name="mac-package-x64" depends="prep,build,mac-stage-x64,mac-sign">
@@ -182,9 +182,9 @@
       <arg value="-f" />
       <arg value="-s" />
       <arg value="${certname}" />
-      <arg value="dist/sensor_server_installer.dmg" />
+      <arg value="dist/SensorConnector.dmg" />
     </exec>
-    <move file="dist/sensor_server_installer.dmg" tofile="dist/SensorServer-x64-${DSTAMP}-1.dmg" />
+    <move file="dist/SensorConnector.dmg" tofile="dist/SensorConnector-x64-${DSTAMP}-1.dmg" />
   </target>
 
 
