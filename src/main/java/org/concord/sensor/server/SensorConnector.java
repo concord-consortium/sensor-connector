@@ -34,8 +34,8 @@ import org.eclipse.jetty.server.Server;
 public class SensorConnector extends JFrame
 {
 	private static final long serialVersionUID = 1L;
-	static final String MAC_EXIT_TEXT = "To exit, click this icon and select 'Exit'.";
-	static final String WIN_EXIT_TEXT = "To exit, right-click this icon and select 'Exit'.";
+	static final String MAC_EXIT_TEXT = "To exit, click the icon like this in the top menu bar and select 'Exit'.";
+	static final String WIN_EXIT_TEXT = "To exit, right-click the icon like this in the task bar and select 'Exit'.";
 
 	public static void main( String[] args ) throws Exception
     {
