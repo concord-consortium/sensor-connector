@@ -1,7 +1,7 @@
 <?xml version="1.0"?>
 <Wix xmlns="http://schemas.microsoft.com/wix/2006/wi" xmlns:util="http://schemas.microsoft.com/wix/UtilExtension" xmlns:bal="http://schemas.microsoft.com/wix/BalExtension">
   <Bundle
-      Version="1.0.0.0"
+      Version="1.0.0.1"
       AboutUrl="http://sensorconnector.concord.org/"
       DisableModify="yes"
       Manufacturer="Concord Consortium, Inc."
@@ -23,8 +23,10 @@
     <WixVariable Id="WixExtbaLogo" Value="" />
     <Chain>
       <MsiPackage
+        ForcePerMachine="yes"
         SourceFile="dist\SensorConnector.msi" />
       <MsiPackage
+        ForcePerMachine="yes"
         SourceFile="resources\drivers\VernierInterfaceDrivers_100.msi" />
 
       <ExePackage

@@ -81,12 +81,18 @@
   </target>
 
   <target name="win-bundle" depends="fx-package">
-    <copy file="dist/SensorConnector-${DSTAMP}-1.msi" tofile="dist/SensorConnector.msi" />
+    <move file="dist/SensorConnector-${DSTAMP}-1.msi" tofile="dist/SensorConnector.msi" />
     <exec executable="script/win-bundle.bat" />
-    <exec executable="signtool.exe" dir="dist" failonerror="false">
-      <arg line="sign /n '${certname}' /tr http://tsa.starfieldtech.com /td SHA256 /v SensorConnector-bundle.exe" />
+    <move file="dist/SensorConnector-bundle.exe" tofile="dist/SensorConnector-${DSTAMP}-1-unsigned.exe" />
+    <exec executable="insignia.exe" dir="dist" failonerror="false">
+      <arg line='-ib SensorConnector-${DSTAMP}-1-unsigned.exe -o engine.exe' />
     </exec>
-    <move file="dist/SensorConnector-bundle.exe" tofile="dist/SensorConnector-${DSTAMP}-1.exe" />
+    <exec executable="signtool.exe" dir="dist" failonerror="false">
+      <arg line="sign /n '${certname}' /tr http://tsa.starfieldtech.com /td SHA256 /v engine.exe" />
+    </exec>
+    <exec executable="insignia.exe" dir="dist" failonerror="false">
+      <arg line='-ab engine.exe SensorConnector-${DSTAMP}-1-unsigned.exe -o SensorConnector-${DSTAMP}-1.exe' />
+    </exec>
   </target>
 
   <target name="mac-stage" depends="build">
