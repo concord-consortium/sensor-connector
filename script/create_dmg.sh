@@ -3,7 +3,7 @@
 # This is based on the instructions here:
 # http://stackoverflow.com/questions/96882/how-do-i-create-a-nice-looking-dmg-for-mac-os-x-using-command-line-tools
 
-hdiutil create -srcfolder "dist/app" -volname "Sensor Connector Installer" -fs HFS+ -fsargs "-c c=64,a=16,e=16" -format UDRW -size 150M dist/SensorConnector.tmp.dmg
+hdiutil create -srcfolder "dist/app" -volname "Sensor Connector Installer" -fs HFS+ -fsargs "-c c=64,a=16,e=16" -format UDRW -size 200M dist/SensorConnector.tmp.dmg
 
 LOC=$(hdiutil attach -readwrite -noverify -noautoopen "dist/SensorConnector.tmp.dmg" | egrep '^/dev/' | sed 1q | awk '{print $1}')
 
