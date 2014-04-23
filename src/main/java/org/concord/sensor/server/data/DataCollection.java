@@ -9,6 +9,8 @@ import org.concord.sensor.ExperimentConfig;
 import org.concord.sensor.SensorConfig;
 import org.concord.sensor.SensorDefaults;
 import org.concord.sensor.device.impl.SensorConfigImpl;
+import org.concord.sensor.impl.ExperimentConfigImpl;
+import org.concord.sensor.impl.Range;
 
 public class DataCollection {
 	private static final Object flag = new Object();
@@ -152,8 +154,17 @@ public class DataCollection {
 		if (configs == null) {
 			configs = new SensorConfig[] {};
 		}
+
 		dt = (config == null ? SensorDefaults.DEFAULT_PERIOD : config.getPeriod());
+		if (config instanceof ExperimentConfigImpl) {
+			Range r = ((ExperimentConfigImpl) config).getPeriodRange();
+			if (r != null && r.minimum > 0) {
+				dt = r.minimum;
+			}
+		}
 		if (dt == 0) { dt = SensorDefaults.DEFAULT_PERIOD; }
+		if (dt < SensorDefaults.MIN_PERIOD) { dt = SensorDefaults.MIN_PERIOD; }
+
 		sensorConfigs = new ArrayList<SensorConfig>();
 
 		// fake time sensor so we can properly export time column values
