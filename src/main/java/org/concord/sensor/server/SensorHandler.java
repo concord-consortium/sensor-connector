@@ -23,8 +23,15 @@ import com.continuent.tungsten.fsm.core.FiniteStateException;
 public class SensorHandler extends AbstractHandler implements DataSink {
 	private SensorStateManager stateManager;
 	private final String sessionId;
+	private boolean initialized = false;
+
 	public SensorHandler() {
 		sessionId = UUID.randomUUID().toString();
+	}
+	
+	public void init() {
+		if (initialized) { return; }
+		initialized = true;
 		startNewCollection(null);
 		try {
 			stateManager = new SensorStateManager(this);
@@ -37,6 +44,7 @@ public class SensorHandler extends AbstractHandler implements DataSink {
 
 	@Override
 	public void handle(String target, Request baseRequest, HttpServletRequest request, HttpServletResponse response) throws IOException, ServletException {
+		if (!initialized) { init(); }
 		baseRequest.setHandled(true);
 		JSONObject json = new JSONObject();
 
@@ -115,6 +123,7 @@ public class SensorHandler extends AbstractHandler implements DataSink {
 	}
 
 	private void appendCollectionInfo(JSONObject json) {
+		if (!initialized) { init(); }
 		JSONObject cInfo = new JSONObject();
 		cInfo.put("isCollecting", stateManager.currentState().getName().equals("CONNECTED:COLLECTING"));
 		cInfo.put("canControl", true);
@@ -167,6 +176,7 @@ public class SensorHandler extends AbstractHandler implements DataSink {
 	}
 
 	public String getCurrentState() {
+		if (!initialized) { init(); }
 		return stateManager.currentState().getName();
 	}
 
@@ -180,11 +190,14 @@ public class SensorHandler extends AbstractHandler implements DataSink {
 	}
 
 	public String getCurrentInterface() {
+		if (!initialized) { init(); }
 		return stateManager.currentInterface();
 	}
 
 	public void shutdown() {
-		stateManager.terminate();
+		if (initialized) {
+			stateManager.terminate();
+		}
 	}
 
 }

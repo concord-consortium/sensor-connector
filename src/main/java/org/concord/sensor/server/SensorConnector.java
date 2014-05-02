@@ -15,6 +15,7 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
+import java.net.BindException;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.util.Arrays;
@@ -24,6 +25,7 @@ import java.util.TimerTask;
 import javax.swing.BorderFactory;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
+import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 
 import org.apache.log4j.BasicConfigurator;
@@ -47,7 +49,15 @@ public class SensorConnector extends JFrame
     	// Attach only to localhost (for now), to avoid any firewall popups
     	final Server server = new Server(new InetSocketAddress(InetAddress.getByName(null), 11180));
         server.setHandler(handler);
-        server.start();
+        try {
+        	server.start();
+        	handler.init();
+        } catch (BindException e) {
+        	System.err.println("Port already in use! Shutting down...");
+        	handler.shutdown();
+        	JOptionPane.showMessageDialog(null, "The Sensor Connector appears to already be running.", "Sensor Connector", JOptionPane.ERROR_MESSAGE);
+        	System.exit(1);
+        }
         
         InfoFrame infoFrame = new InfoFrame(handler);
         
