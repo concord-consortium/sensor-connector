@@ -70,6 +70,10 @@ public class DeviceFinder {
 						logger.fine("Found a Vernier LabQuest Mini!");
 						foundDevices.add(DeviceID.VERNIER_LAB_QUEST);
 						break;
+					case 0x000B: // LabQuest 2
+						logger.fine("Found a Vernier LabQuest 2!");
+						foundDevices.add(DeviceID.VERNIER_LAB_QUEST);
+						break;
 					}
 					break;
 				case 0x0945: // Pasco
