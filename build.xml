@@ -40,6 +40,7 @@
     <mkdir dir="dist" />
     <mkdir dir="dist/app" />
     <mkdir dir="dist/app/.background" />
+    <echo file="src/main/resources/VERSION" append="false">1.0 (${DSTAMP})</echo>
   </target>
 
   <target name="build" depends="prep">
