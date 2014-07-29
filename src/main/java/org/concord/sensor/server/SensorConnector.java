@@ -39,6 +39,7 @@ public class SensorConnector extends JFrame
 	static final String MAC_EXIT_TEXT = "To exit, click the icon like this in the top menu bar and select 'Exit'.";
 	static final String WIN_EXIT_TEXT = "To exit, right-click the icon like this in the task bar and select 'Exit'.";
 
+	private static Server server = null;
 	public static void main( String[] args ) throws Exception
     {
 		BasicConfigurator.configure();
@@ -47,17 +48,25 @@ public class SensorConnector extends JFrame
     	final SensorHandler handler = new SensorHandler();
     	// 11180 seems unassigned, high enough to not be privileged
     	// Attach only to localhost (for now), to avoid any firewall popups
-    	final Server server = new Server(new InetSocketAddress(InetAddress.getByName(null), 11180));
-        server.setHandler(handler);
-        try {
-        	server.start();
-        	handler.init();
-        } catch (BindException e) {
-        	System.err.println("Port already in use! Shutting down...");
+    	String[] hosts = new String[] {null, "127.0.0.1", "localhost"};
+    	for (String host : hosts) {
+    		server = new Server(new InetSocketAddress(InetAddress.getByName(host), 11180));
+    		server.setHandler(handler);
+	        try {
+	        	server.start();
+	        	handler.init();
+	        	break;
+	        } catch (BindException e) {
+	        	System.err.println("Port already in use! " + host + ":11180");
+	        }
+    	}
+    	
+    	if (!server.isStarted()) {
+    		// we were unable to bind to a port, most likely.
         	handler.shutdown();
         	JOptionPane.showMessageDialog(null, "The Sensor Connector appears to already be running.", "Sensor Connector", JOptionPane.ERROR_MESSAGE);
         	System.exit(1);
-        }
+    	}
         
         InfoFrame infoFrame = new InfoFrame(handler);
         
