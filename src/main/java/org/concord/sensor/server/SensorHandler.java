@@ -24,6 +24,7 @@ public class SensorHandler extends AbstractHandler implements DataSink {
 	private SensorStateManager stateManager;
 	private final String sessionId;
 	private boolean initialized = false;
+	private String currentClient = "default";
 
 	public SensorHandler() {
 		sessionId = UUID.randomUUID().toString();
@@ -54,13 +55,14 @@ public class SensorHandler extends AbstractHandler implements DataSink {
 			json.put("requestTimeStamp", System.currentTimeMillis());
 			json.put("columnListTimeStamp", lastCollectionAdded);
 			json.put("currentInterface", stateManager.currentInterface());
-			appendColumnsInfo(json);
-			appendCollectionInfo(json);
+			appendColumnsInfo(json, getCurrentClient(request));
+			appendCollectionInfo(json, getCurrentClient(request));
 		} else if (target.equals("/connect")) {
 			stateManager.connect();
 		} else if (target.equals("/disconnect")) {
 			stateManager.disconnect();
 		} else if (target.equals("/control/start")) {
+			currentClient = getCurrentClient(request);
 			stateManager.start();
 		} else if (target.equals("/control/stop")) {
 			stateManager.stop();
@@ -84,6 +86,12 @@ public class SensorHandler extends AbstractHandler implements DataSink {
 		response.getWriter().println(json.toJSONString());
 	}
 
+	private String getCurrentClient(HttpServletRequest request) {
+		String client = request.getParameter("client");
+		if (client == null) { client = "default"; }
+		return client;
+	}
+
 	private void appendColumnValues(JSONObject json, int column) {
 		for (DataCollection c : collections) {
 			int sensorNum = column - c.getId();
@@ -100,39 +108,49 @@ public class SensorHandler extends AbstractHandler implements DataSink {
 		}
 	}
 
-	private void appendColumnsInfo(JSONObject json) {
+	private void appendColumnsInfo(JSONObject json, String client) {
 		JSONObject sInfo = new JSONObject();
 		JSONObject cInfo = new JSONObject();
-		for (int i = 0; i < collections.size(); i++) {
+		int run = 0;
+		for (int i = 0; i < collectionToClientMap.size(); i++) {
 			DataCollection c = collections.get(i);
-			JSONObject setInfo = new JSONObject();
-			setInfo.put("name", "Run " + i);
-			
-			JSONObject columnInfo = c.getColumnInfo();
-			cInfo.merge(columnInfo);
-			
-			ArrayList<Integer> colIDs = new ArrayList<Integer>();
-			for (int j = 0; j < c.getNumberOfSensors(); j++) {
-				colIDs.add(c.getId() + j);
+			if (collectionToClientMap.get(i).equals(client) || c == currentPollingCollection) {
+				run++;
+				JSONObject setInfo = new JSONObject();
+				setInfo.put("name", "Run " + run);
+				
+				JSONObject columnInfo = c.getColumnInfo();
+				cInfo.merge(columnInfo);
+				
+				ArrayList<Integer> colIDs = new ArrayList<Integer>();
+				for (int j = 0; j < c.getNumberOfSensors(); j++) {
+					colIDs.add(c.getId() + j);
+				}
+				setInfo.put("colIDs", colIDs);
+				sInfo.put(""+c.getId(), setInfo);
 			}
-			setInfo.put("colIDs", colIDs);
-			sInfo.put(""+c.getId(), setInfo);
 		}
 		json.put("columns", cInfo);
 		json.put("sets", sInfo);
 	}
 
-	private void appendCollectionInfo(JSONObject json) {
+	private void appendCollectionInfo(JSONObject json, String clientId) {
 		if (!initialized) { init(); }
+		
+		boolean isCollecting = stateManager.currentState().getName().equals("CONNECTED:COLLECTING") && currentClient.equals(clientId);
+		boolean controlBlocked = stateManager.currentState().getName().equals("CONNECTED:COLLECTING") && !currentClient.equals(clientId);
+		
 		JSONObject cInfo = new JSONObject();
-		cInfo.put("isCollecting", stateManager.currentState().getName().equals("CONNECTED:COLLECTING"));
-		cInfo.put("canControl", true);
+		cInfo.put("isCollecting", isCollecting);
+		cInfo.put("canControl", !controlBlocked);
 		json.put("collection", cInfo);
 	}
 
 	// DataSink support
 	private ArrayList<DataCollection> collections = new ArrayList<DataCollection>();
+	private ArrayList<String> collectionToClientMap = new ArrayList<String>();
 	private long lastCollectionAdded;
+	private DataCollection currentPollingCollection;
 	
 	@Override
 	public void setLastPolledData(ExperimentConfig config, float[] data) {
@@ -162,7 +180,14 @@ public class SensorHandler extends AbstractHandler implements DataSink {
 
 	@Override
 	public void appendCollectedData(int numSamples, float[] data) {
-		collections.get(collections.size()-1).appendCollectedData(numSamples, data);
+		DataCollection dc = collections.get(collections.size()-1);
+		
+		if (dc.getNumberOfSamples() == 0) {
+			collectionToClientMap.set(collections.size()-1, currentClient);
+			currentPollingCollection = null;
+		}
+
+		dc.appendCollectedData(numSamples, data);
 	}
 
 	@Override
@@ -172,7 +197,10 @@ public class SensorHandler extends AbstractHandler implements DataSink {
 			return;
 		}
 		lastCollectionAdded = System.currentTimeMillis();
-		collections.add(new DataCollection(config));
+		DataCollection dataCollection = new DataCollection(config);
+		collections.add(dataCollection);
+		collectionToClientMap.add("default");
+		currentPollingCollection = dataCollection;
 	}
 
 	public String getCurrentState() {
