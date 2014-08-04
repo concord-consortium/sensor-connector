@@ -25,6 +25,7 @@ public class SensorHandler extends AbstractHandler implements DataSink {
 	private final String sessionId;
 	private boolean initialized = false;
 	private String currentClient = "default";
+	private String currentClientFriendlyName = null;
 
 	public SensorHandler() {
 		sessionId = UUID.randomUUID().toString();
@@ -63,6 +64,7 @@ public class SensorHandler extends AbstractHandler implements DataSink {
 			stateManager.disconnect();
 		} else if (target.equals("/control/start")) {
 			currentClient = getCurrentClient(request);
+			currentClientFriendlyName = getCurrentClientFriendlyName(request);
 			stateManager.start();
 		} else if (target.equals("/control/stop")) {
 			stateManager.stop();
@@ -90,6 +92,11 @@ public class SensorHandler extends AbstractHandler implements DataSink {
 		String client = request.getParameter("client");
 		if (client == null) { client = "default"; }
 		return client;
+	}
+
+	private String getCurrentClientFriendlyName(HttpServletRequest request) {
+		String clientName = request.getParameter("clientName");
+		return clientName;
 	}
 
 	private void appendColumnValues(JSONObject json, int column) {
@@ -143,6 +150,12 @@ public class SensorHandler extends AbstractHandler implements DataSink {
 		JSONObject cInfo = new JSONObject();
 		cInfo.put("isCollecting", isCollecting);
 		cInfo.put("canControl", !controlBlocked);
+		if (controlBlocked) {
+			JSONObject blockInfo = new JSONObject();
+			blockInfo.put("clientId", currentClient);
+			blockInfo.put("clientName", (currentClientFriendlyName == null ? "another client" : currentClientFriendlyName));
+			cInfo.put("inControl", blockInfo);
+		}
 		json.put("collection", cInfo);
 	}
 
