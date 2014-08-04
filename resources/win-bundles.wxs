@@ -1,16 +1,12 @@
 <?xml version="1.0"?>
 <Wix xmlns="http://schemas.microsoft.com/wix/2006/wi" xmlns:util="http://schemas.microsoft.com/wix/UtilExtension" xmlns:bal="http://schemas.microsoft.com/wix/BalExtension">
   <Bundle
-      Version="1.0.0.1"
+      Version="1.0.0.2"
       AboutUrl="http://sensorconnector.concord.org/"
       DisableModify="yes"
       Manufacturer="Concord Consortium, Inc."
       Name="Sensor Connector"
       UpgradeCode="38132EBB-AB18-466D-96BD-0CBBC617A018">
-    <util:FileSearch
-      Variable="pascoInstalled"
-      Path="[ProgramFilesFolder]\Pasco scientific\Common Files\PascoUSBDriver uninstall.exe"
-      Result="exists" />
     <BootstrapperApplicationRef Id="WixStandardBootstrapperApplication.HyperlinkLicense">
       <bal:WixStandardBootstrapperApplication
           SuppressOptionsUI="yes"
@@ -27,14 +23,12 @@
         SourceFile="dist\SensorConnector.msi" />
       <MsiPackage
         ForcePerMachine="yes"
-        SourceFile="resources\drivers\VernierInterfaceDrivers_100.msi" />
-
-      <ExePackage
-        SourceFile="resources\drivers\PascoUsbDriverInstaller.exe"
-        DetectCondition="pascoInstalled"
         Permanent="yes"
-        PerMachine="yes"
-        InstallCommand="/S" />
+        SourceFile="resources\drivers\VernierInterfaceDrivers_100.msi" />
+      <MsiPackage
+        ForcePerMachine="yes"
+        Permanent="yes"
+        SourceFile="resources\drivers\PASCOUSBDrivers.msi" />
     </Chain>
   </Bundle>
 </Wix>

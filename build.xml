@@ -82,7 +82,7 @@
   </target>
 
   <target name="win-bundle" depends="fx-package">
-    <move file="dist/SensorConnector-${DSTAMP}-1.msi" tofile="dist/SensorConnector.msi" />
+    <copy file="dist/SensorConnector-${DSTAMP}-1.msi" tofile="dist/SensorConnector.msi" />
     <exec executable="script/win-bundle.bat" />
     <move file="dist/SensorConnector-bundle.exe" tofile="dist/SensorConnector-${DSTAMP}-1-unsigned.exe" />
     <exec executable="insignia.exe" dir="dist" failonerror="false">
