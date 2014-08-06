@@ -2,6 +2,8 @@
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
 <plist version="1.0">
     <dict>
+        <key>CFBundleIdentifier</key>
+        <string>org.concord.sensorconnector</string>
         <key>CFBundleExecutable</key>
         <string>run.sh</string>
         <key>CFBundleIconFile</key>
@@ -13,12 +15,27 @@
         <key>CFBundleSignature</key>
         <string>????</string>
         <key>CFBundleVersion</key>
-        <string>1.0</string>
-	<key>LSMultipleInstancesProhibited</key>
-	<true/>
-	<key>LSUIElement</key>
-	<string>1</string>
-	<key>LSUIPresentationMode</key>
-	<string>4</string>
+        <string>1.0.20140806</string>
+    	<key>LSMultipleInstancesProhibited</key>
+    	<true/>
+    	<key>LSUIElement</key>
+    	<string>1</string>
+    	<key>LSUIPresentationMode</key>
+    	<string>4</string>
+        <key>CFBundleURLTypes</key>
+        <array>
+            <dict>
+                <key>CFBundleTypeRole</key>
+                <string>viewer</string>
+                <key>CFBundleURLIconFile</key>
+                <string>cc-lightbulb.icns</string>
+                <key>CFBundleURLName</key>
+                <string>org.concord.sensorconnector</string>
+                <key>CFBundleURLSchemes</key>
+                <array>
+                    <string>ccsc</string>
+                </array>
+            </dict>
+        </array>
     </dict>
 </plist>
