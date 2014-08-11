@@ -35,6 +35,7 @@ public class DataCollection {
 	
 	public synchronized void appendCollectedData(int numSamples, float[] data) {
 		int idx = 0;
+		float[] lastCollected = new float[sensorConfigs.size()-1];
 		for (int sensor = 0; sensor < sensorConfigs.size(); sensor++) {
 			ArrayList<Float> sensorData = sensorsData.get(sensor);
 			for (int sample = 0; sample < numSamples; sample++) {
@@ -47,9 +48,13 @@ public class DataCollection {
 					sensorData.add(data[idx]);
 				}
 			}
+			if (sensor > 0) {
+				lastCollected[sensor-1] = sensorData.get(sensorData.size()-1);
+			}
 		}
 		samplesCollected += numSamples;
 		lastCollectedTime = System.currentTimeMillis();
+		setLastPolledData(lastCollected);
 	}
 	
 	public float[][] getCollectedData() {
