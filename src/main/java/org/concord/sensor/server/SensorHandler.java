@@ -153,7 +153,9 @@ public class SensorHandler extends AbstractHandler implements DataSink {
 		if (controlBlocked) {
 			JSONObject blockInfo = new JSONObject();
 			blockInfo.put("clientId", currentClient);
-			blockInfo.put("clientName", (currentClientFriendlyName == null ? "another client" : currentClientFriendlyName));
+			if (currentClientFriendlyName != null) {
+				blockInfo.put("clientName", currentClientFriendlyName);
+			}
 			cInfo.put("inControl", blockInfo);
 		}
 		json.put("collection", cInfo);
