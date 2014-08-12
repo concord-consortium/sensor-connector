@@ -5,4 +5,4 @@ cd ..
 export JAVA_HOME=$(pwd -P)/Resources/jdk
 export PATH=$JAVA_HOME/Home/bin:$PATH
 
-java -d32 -Dapple.awt.UIElement=true -Xdock:icon=Resources/cc-lightbulb.icns -jar Java/sensor-connector-0.0.1-SNAPSHOT.jar
+java -d32 -Djava.ext.dir="" -Dapple.awt.UIElement=true -Xdock:icon=Resources/cc-lightbulb.icns -jar Java/sensor-connector-0.0.1-SNAPSHOT.jar
