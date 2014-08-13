@@ -17,8 +17,6 @@ import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.io.InputStream;
 import java.net.BindException;
-import java.net.InetAddress;
-import java.net.InetSocketAddress;
 import java.util.Arrays;
 import java.util.Scanner;
 import java.util.Timer;
@@ -33,7 +31,11 @@ import javax.swing.JPanel;
 import org.apache.log4j.BasicConfigurator;
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
+import org.eclipse.jetty.server.Connector;
 import org.eclipse.jetty.server.Server;
+import org.eclipse.jetty.server.bio.SocketConnector;
+import org.eclipse.jetty.server.ssl.SslSocketConnector;
+import org.eclipse.jetty.util.ssl.SslContextFactory;
 
 public class SensorConnector extends JFrame
 {
@@ -48,18 +50,34 @@ public class SensorConnector extends JFrame
 		Logger.getLogger("org.concord.sensor").setLevel(Level.ERROR);
 
     	final SensorHandler handler = new SensorHandler();
+    	
+    	server = new Server();
+
+		SslContextFactory sslContextFactory = new SslContextFactory(SensorConnector.class.getResource("/server.jks").toExternalForm());
+		sslContextFactory.setKeyStorePassword("123456");
+    	
+    	SocketConnector httpConnector = new SocketConnector();
+    	SslSocketConnector httpsConnector = new SslSocketConnector(sslContextFactory);
+    	
     	// 11180 seems unassigned, high enough to not be privileged
+    	// Use 11181 for HTTPS
+    	httpConnector.setPort(11180);
+    	httpsConnector.setPort(11181);
+    	
+    	server.setConnectors(new Connector[] { httpConnector, httpsConnector });
+		server.setHandler(handler);
+    	
     	// Attach only to localhost (for now), to avoid any firewall popups
-    	String[] hosts = new String[] {null, "127.0.0.1", "localhost"};
+    	String[] hosts = new String[] {"127.0.0.1", "localhost"};
     	for (String host : hosts) {
-    		server = new Server(new InetSocketAddress(InetAddress.getByName(host), 11180));
-    		server.setHandler(handler);
+    		httpConnector.setHost(host);
+    		httpsConnector.setHost(host);
 	        try {
 	        	server.start();
 	        	handler.init();
 	        	break;
 	        } catch (BindException e) {
-	        	System.err.println("Port already in use! " + host + ":11180");
+	        	System.err.println("Ports 11180,11181 already in use on " + host);
 	        }
     	}
     	
