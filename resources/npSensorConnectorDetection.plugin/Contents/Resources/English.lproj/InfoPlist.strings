@@ -1,0 +1,4 @@
+/* Localized versions of Info.plist keys */
+
+CFBundleName = "Sensor Connector Detection_x86_64";
+NSHumanReadableCopyright = "Copyright 2014 Concord Consortium";

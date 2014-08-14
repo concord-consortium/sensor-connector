@@ -40,6 +40,7 @@
     <mkdir dir="dist" />
     <mkdir dir="dist/app" />
     <mkdir dir="dist/app/.background" />
+    <mkdir dir="dist/package" />
     <echo file="src/main/resources/VERSION" append="false">1.0 (${DSTAMP})</echo>
   </target>
 
@@ -185,6 +186,7 @@
   </target>
 
   <target name="mac-package" depends="prep,build,mac-stage,mac-sign">
+    <exec executable="./script/create_pkg.sh" />
     <exec executable="./script/create_dmg.sh" />
     <exec executable="codesign" failonerror="false">
       <arg value="-f" />
@@ -196,6 +198,7 @@
   </target>
 
   <target name="mac-package-x64" depends="prep,build,mac-stage-x64,mac-sign">
+    <exec executable="./script/create_pkg.sh" />
     <exec executable="./script/create_dmg.sh" />
     <exec executable="codesign" failonerror="false">
       <arg value="-f" />
