@@ -41,10 +41,10 @@
     <mkdir dir="dist/app" />
     <mkdir dir="dist/app/.background" />
     <mkdir dir="dist/package" />
-    <echo file="src/main/resources/VERSION" append="false">1.0 (${DSTAMP})</echo>
   </target>
 
   <target name="build" depends="prep">
+    <echo file="src/main/resources/VERSION" append="false">1.0.${DSTAMP} 32-bit</echo>
     <exec executable="mvn.bat" failonerror="true" osfamily="windows">
       <arg value="-U" />
       <arg value='-DexcludeClassifiers="linux-x86,linux-x86_64,linux-arm,windows-x86_64,osx-x86,osx-x86_64"' />
@@ -52,6 +52,17 @@
       <arg value="package" />
       <arg value="dependency:copy-dependencies" />
     </exec>
+    <exec executable="mvn" failonerror="true" osfamily="mac">
+      <arg value="-U" />
+      <arg value='-DexcludeClassifiers="linux-x86,linux-x86_64,linux-arm,windows-x86,windows-x86_64"' />
+      <arg value="clean" />
+      <arg value="package" />
+      <arg value="dependency:copy-dependencies" />
+    </exec>
+  </target>
+
+  <target name="build-mac-x64" depends="prep">
+    <echo file="src/main/resources/VERSION" append="false">1.0.${DSTAMP} 64-bit</echo>
     <exec executable="mvn" failonerror="true" osfamily="mac">
       <arg value="-U" />
       <arg value='-DexcludeClassifiers="linux-x86,linux-x86_64,linux-arm,windows-x86,windows-x86_64"' />
@@ -130,7 +141,7 @@
     </exec>
   </target>
 
-  <target name="mac-stage-x64" depends="build">
+  <target name="mac-stage-x64" depends="build-mac-x64">
     <exec executable="/usr/libexec/java_home" outputproperty="system_jre" />
     <condition property="jre" value="${system_jre}">
       <not>
