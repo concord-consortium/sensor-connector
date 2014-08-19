@@ -17,6 +17,7 @@ import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.io.InputStream;
 import java.net.BindException;
+import java.security.Security;
 import java.util.Arrays;
 import java.util.Scanner;
 import java.util.Timer;
@@ -31,6 +32,7 @@ import javax.swing.JPanel;
 import org.apache.log4j.BasicConfigurator;
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
+import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.eclipse.jetty.server.Connector;
 import org.eclipse.jetty.server.Server;
 import org.eclipse.jetty.server.bio.SocketConnector;
@@ -48,6 +50,10 @@ public class SensorConnector extends JFrame
     {
 		BasicConfigurator.configure();
 		Logger.getLogger("org.concord.sensor").setLevel(Level.ERROR);
+		
+		if (isMac()) {
+			Security.addProvider(new BouncyCastleProvider());
+		}
 
     	final SensorHandler handler = new SensorHandler();
     	
@@ -107,7 +113,7 @@ public class SensorConnector extends JFrame
     	    }
     	});
     }
-	
+
 	static boolean isMac() {
 		return System.getProperty("os.name").toLowerCase().startsWith("mac");
 	}
