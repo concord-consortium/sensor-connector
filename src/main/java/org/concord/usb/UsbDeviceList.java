@@ -58,4 +58,12 @@ public class UsbDeviceList {
 		}
 		return devices;
 	}
+	
+	public static void main(String[] args) throws UsbException {
+		ArrayList<UsbDevice> attachedDevices = getAttachedDevices();
+		System.out.println("VendID ProdID");
+		for (UsbDevice usbDevice : attachedDevices) {
+			System.out.format("0x%04x 0x%04x\n", usbDevice.vendorId, usbDevice.productId);
+		}
+	}
 }
