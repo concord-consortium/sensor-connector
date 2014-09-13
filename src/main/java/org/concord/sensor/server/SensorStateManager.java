@@ -28,6 +28,7 @@ import org.concord.sensor.impl.SensorRequestImpl;
 import org.concord.sensor.pasco.PascoUsbSensorDevice;
 import org.concord.sensor.server.data.DataSink;
 import org.concord.sensor.vernier.labquest.LabQuestSensorDevice;
+import org.concord.usb.UsbException;
 import org.usb4java.LibUsbException;
 
 import com.continuent.tungsten.fsm.core.Action;
@@ -260,7 +261,7 @@ public class SensorStateManager {
 								// TODO Give the user the option to choose which one to connect to?
 								currentInterfaceType = types[0];
 							}
-						} catch (LibUsbException e) {
+						} catch (UsbException e) {
 							logger.error("Failed to enumerate USB devices!", e);
 						}
 						

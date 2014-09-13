@@ -1,5 +1,6 @@
 package org.concord.sensor;
 
+import org.concord.usb.UsbException;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
@@ -8,7 +9,7 @@ import org.junit.runners.JUnit4;
 public class DeviceFinderTest {
 
 	@Test
-	public void findDevices() {
+	public void findDevices() throws UsbException {
 		int[] attachedTypes = DeviceFinder.getAttachedDeviceTypes();
 		
 		System.err.println("Enumerating found types:");
