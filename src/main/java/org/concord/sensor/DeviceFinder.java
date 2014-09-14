@@ -7,13 +7,21 @@ import org.concord.sensor.device.impl.DeviceID;
 import org.concord.usb.UsbDevice;
 import org.concord.usb.UsbDeviceList;
 import org.concord.usb.UsbException;
+import org.concord.usb.jna.JNAUsbDeviceList;
+
+import com.sun.jna.Platform;
 
 public class DeviceFinder {
 	private static final Logger logger = Logger.getLogger(DeviceFinder.class.getName());
 
 	public static int[] getAttachedDeviceTypes() throws UsbException {
 		ArrayList<Integer> foundDevices = new ArrayList<Integer>();
-		ArrayList<UsbDevice> attachedDevices = UsbDeviceList.getAttachedDevices();
+		ArrayList<UsbDevice> attachedDevices = null;
+		if (Platform.isMac()){
+			attachedDevices = JNAUsbDeviceList.getAttachedDevices();
+		} else {
+			attachedDevices = UsbDeviceList.getAttachedDevices();
+		}
 		
 		for (UsbDevice device : attachedDevices) {
 			
