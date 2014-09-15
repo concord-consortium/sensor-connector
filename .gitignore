@@ -4,6 +4,8 @@ target
 .classpath
 .settings
 dist/*.msi
-SensorConnector-*
+SensorConnector-*msi
+SensorConnector-*exe
+SensorConnector-*dmg
 tmp
 dist

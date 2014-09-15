@@ -1,0 +1,35 @@
+<pkg-contents spec="1.12">
+<f n="npSensorConnectorDetection.plugin" o="root" g="wheel" p="16893" pt="../npSensorConnectorDetection.plugin" m="true" t="file">
+<f n="Contents" o="root" g="wheel" p="16893">
+<f n="_CodeSignature" o="root" g="wheel" p="16893">
+<f n="CodeResources" o="root" g="wheel" p="33204">
+<mod>mode</mod>
+</f>
+<mod>mode</mod>
+</f>
+<f n="Info.plist" o="root" g="wheel" p="33204">
+<mod>mode</mod>
+</f>
+<f n="MacOS" o="root" g="wheel" p="16893">
+<f n="npSensorConnectorDetection" o="root" g="wheel" p="33277">
+<mod>mode</mod>
+</f>
+<mod>mode</mod>
+</f>
+<f n="Resources" o="root" g="wheel" p="16893">
+<f n="English.lproj" o="root" g="wheel" p="16893">
+<f n="InfoPlist.strings" o="root" g="wheel" p="33204">
+<mod>mode</mod>
+</f>
+<f n="Localized.rsrc" o="root" g="wheel" p="33204">
+<mod>mode</mod>
+</f>
+<mod>mode</mod>
+</f>
+<mod>mode</mod>
+</f>
+<mod>mode</mod>
+</f>
+<mod>mode</mod>
+</f>
+</pkg-contents>
