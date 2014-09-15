@@ -6,6 +6,7 @@
 - [**Ant**](http://ant.apache.org/) (any recent version)
 - [**Maven**](http://maven.apache.org/) (any recent version)
 - A **32-bit JDK** (for now, the Pasco libraries require 32-bit -- see notes for your platform), or a **64-bit JDK** if you don't care about supporting Pasco devices
+- the JDK used to build the installer needs to be Java 7 or higher
 
 #### Windows
 

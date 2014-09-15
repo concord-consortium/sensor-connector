@@ -124,6 +124,7 @@
     <mkdir dir="dist/app/SensorConnector.app/Contents/MacOS" />
     <mkdir dir="dist/app/SensorConnector.app/Contents/Resources" />
     <mkdir dir="dist/app/SensorConnector.app/Contents/Java" />
+    <mkdir dir="dist/app/SensorConnector.app/Contents/Frameworks" />
     <copy file="resources/cc-lightbulb.icns" todir="dist/app/SensorConnector.app/Contents/Resources" />
     <copy file="resources/Info.plist" todir="dist/app/SensorConnector.app/Contents" />
     <copy file="resources/run.sh" todir="dist/app/SensorConnector.app/Contents/MacOS" />
@@ -133,6 +134,7 @@
         <include name="**/*.jar" />
       </fileset>
     </copy>
+    <copy file="resources/libusb-1.0.dylib" todir="dist/app/SensorConnector.app/Contents/Frameworks" />
     <exec executable="cp" dir="dist/app/SensorConnector.app/Contents/Resources">
       <arg line="-r ${jre} jdk" />
     </exec>
