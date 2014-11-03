@@ -122,23 +122,35 @@ public class SensorHandler extends AbstractHandler implements DataSink {
 		for (int i = 0; i < collectionToClientMap.size(); i++) {
 			DataCollection c = collections.get(i);
 			if (collectionToClientMap.get(i).equals(client) || c == currentPollingCollection) {
-				run++;
-				JSONObject setInfo = new JSONObject();
-				setInfo.put("name", "Run " + run);
-				
-				JSONObject columnInfo = c.getColumnInfo();
-				cInfo.merge(columnInfo);
-				
-				ArrayList<Integer> colIDs = new ArrayList<Integer>();
-				for (int j = 0; j < c.getNumberOfSensors(); j++) {
-					colIDs.add(c.getId() + j);
-				}
-				setInfo.put("colIDs", colIDs);
-				sInfo.put(""+c.getId(), setInfo);
+				run = appendRunToColumnInfo(sInfo, cInfo, run, c);
 			}
+		}
+		// If we get to this point, we are currently collecting, but a new client
+		// is connecting and doesn't have any valid collections to show.
+		// currentPollingCollection is a clone of the most recent collection, so show
+		// it to the new client.
+		if (run == 0 && currentPollingCollection != null) {
+			run = appendRunToColumnInfo(sInfo, cInfo, run, currentPollingCollection);
 		}
 		json.put("columns", cInfo);
 		json.put("sets", sInfo);
+	}
+
+	private int appendRunToColumnInfo(JSONObject sInfo, JSONObject cInfo, int run, DataCollection c) {
+		run++;
+		JSONObject setInfo = new JSONObject();
+		setInfo.put("name", "Run " + run);
+		
+		JSONObject columnInfo = c.getColumnInfo();
+		cInfo.merge(columnInfo);
+		
+		ArrayList<Integer> colIDs = new ArrayList<Integer>();
+		for (int j = 0; j < c.getNumberOfSensors(); j++) {
+			colIDs.add(c.getId() + j);
+		}
+		setInfo.put("colIDs", colIDs);
+		sInfo.put(""+c.getId(), setInfo);
+		return run;
 	}
 
 	private void appendCollectionInfo(JSONObject json, String clientId) {
@@ -199,7 +211,7 @@ public class SensorHandler extends AbstractHandler implements DataSink {
 		
 		if (dc.getNumberOfSamples() == 0) {
 			collectionToClientMap.set(collections.size()-1, currentClient);
-			currentPollingCollection = null;
+			currentPollingCollection = currentPollingCollection.clone();
 		}
 
 		dc.appendCollectedData(numSamples, data);

@@ -33,6 +33,22 @@ public class DataCollection {
 		updateSensors(config);
 	}
 	
+	private DataCollection(DataCollection collection) {
+		synchronized (flag) {
+			id = 110 + COUNT;
+			COUNT += 10; // for now, don't support more than 9 sensors (plus 1 time) per device
+		}
+		dt = collection.dt;
+		lastPolledData = collection.lastPolledData.clone();
+		lastPolledTimestamp = collection.lastPolledTimestamp;
+		sensorConfigs = (ArrayList<SensorConfig>) collection.sensorConfigs.clone();
+		sensorsData = new ArrayList<ArrayList<Float>>();
+		
+		for (int i = 0; i < sensorConfigs.size(); i++) {
+			sensorsData.add(new ArrayList<Float>());
+		}
+	}
+	
 	public synchronized void appendCollectedData(int numSamples, float[] data) {
 		int idx = 0;
 		float[] lastCollected = new float[sensorConfigs.size()-1];
@@ -199,5 +215,10 @@ public class DataCollection {
 		} else {
 			return new String[] {};
 		}
+	}
+	
+	public DataCollection clone() {
+		DataCollection clone = new DataCollection(this);
+		return clone;
 	}
 }
