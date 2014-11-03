@@ -74,7 +74,11 @@
 
   <target name="fx-package" depends="build">
     <fail unless="env.JAVA_HOME" message="You must set JAVA_HOME (eg: 'export JAVA_HOME=`/usr/libexec/java_home`')" />
-    <copy file="target/sensor-connector-0.0.1-SNAPSHOT.jar" todir="target/dependency" />
+    <copy todir="target/dependency">
+      <fileset dir="target">
+        <include name="sensor-connector-*.jar" />
+      </fileset>
+    </copy>
     <fx:deploy verbose="true" nativeBundles="all" width="100" height="100" outdir="dist/" outfile="SensorConnector">
       <info title="Sensor Connector" vendor="Concord Consortium" description="Sensor Connector Application" />
       <fx:application mainClass="org.concord.sensor.server.SensorConnector" toolkit="swing"/>

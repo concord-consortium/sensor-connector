@@ -17,6 +17,7 @@ import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.io.InputStream;
 import java.net.BindException;
+import java.net.URL;
 import java.security.Security;
 import java.util.Arrays;
 import java.util.Scanner;
@@ -267,12 +268,34 @@ class InfoFrame extends JFrame {
 		}, 0, 500);
 	}
 
-	private String readVersionString() {
+	private String readVersionStringFromFile() {
 		InputStream versionStream = this.getClass().getResourceAsStream("/VERSION");
 		Scanner s = new Scanner(versionStream);
 		String version = s.nextLine();
 		s.close();
 		return version;
+	}
+
+	private String readVersionString() {
+		URL location = SensorConnector.class.getProtectionDomain().getCodeSource().getLocation();
+		String locStr = location != null ? location.toExternalForm() : "";
+		if (locStr.endsWith(".jar")) {
+			String version = locStr.substring(locStr.length()-17, locStr.length()-4);
+			String bitness = getJVMArch();
+			return version + " (" + bitness + ")";
+		} else {
+			return readVersionStringFromFile();
+		}
+	}
+
+	// This only really works on Sun JVMs. But since SensorConnector is custom-packaged with its own JVM, it should be ok.
+	private String getJVMArch() {
+		String bitness = "unknown";
+		String bitProp = System.getProperty("sun.arch.data.model");
+		if (bitProp != null && !bitProp.equals("unknown")) {
+			bitness = bitProp + "-bit";
+		}
+		return bitness;
 	}
 
 	private void setupTray() {
