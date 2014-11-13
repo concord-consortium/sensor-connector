@@ -15,7 +15,7 @@
         <key>CFBundleSignature</key>
         <string>????</string>
         <key>CFBundleVersion</key>
-        <string>1.0.20140806</string>
+        <string>1.0.20141106</string>
     	<key>LSMultipleInstancesProhibited</key>
     	<true/>
     	<key>LSUIElement</key>
