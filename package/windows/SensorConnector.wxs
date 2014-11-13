@@ -35,7 +35,7 @@
                 <!-- Register the ccsc: external protocol and .ccsc file type handler -->
                 <RegistryKey Root="HKCR" Key=".ccsc">
                     <RegistryValue Type="string" Value="ccsc"/>
-                    <RegistryValue Type="string" Name="Content Type" Value="application/vnd.concordconsortium.sensorconnector"/>
+                    <RegistryValue Type="string" Name="Content Type" Value="application/vnd-concordconsortium-sensorconnector"/>
                 </RegistryKey>
                 <RegistryKey Root="HKCR" Key="ccsc">
                     <RegistryValue Type="string" Value="URL:ccsc Protocol Handler"/>
@@ -49,12 +49,9 @@
                 <RegistryKey Root="HKCR" Key="ccsc\shell\open\command">
                     <RegistryValue Type="string" Value='"[APPLICATIONFOLDER]SensorConnector.exe" "%1"'/>
                 </RegistryKey>
-                <RegistryKey Root="HKCR" Key="MIME\Database\Content Type\application/vnd.concordconsortium.sensorconnector">
-                    <RegistryValue Type="string" Value=".ccsc"/>
-                </RegistryKey>
                 <RegistryKey Root="HKCU" Key="Software\Classes\.ccsc">
                     <RegistryValue Type="string" Value="ccsc"/>
-                    <RegistryValue Type="string" Name="Content Type" Value="application/vnd.concordconsortium.sensorconnector"/>
+                    <RegistryValue Type="string" Name="Content Type" Value="application/vnd-concordconsortium-sensorconnector"/>
                 </RegistryKey>
                 <RegistryKey Root="HKCU" Key="Software\Classes\ccsc">
                     <RegistryValue Type="string" Value="URL:ccsc Protocol Handler"/>
@@ -68,7 +65,7 @@
                 <RegistryKey Root="HKCU" Key="Software\Classes\ccsc\shell\open\command">
                     <RegistryValue Type="string" Value='"[APPLICATIONFOLDER]SensorConnector.exe" "%1"'/>
                 </RegistryKey>
-                <RegistryKey Root="HKCU" Key="Software\Classes\MIME\Database\Content Type\application/vnd.concordconsortium.sensorconnector">
+                <RegistryKey Root="HKCU" Key="Software\Classes\MIME\Database\Content Type\application/vnd-concordconsortium-sensorconnector">
                     <RegistryValue Type="string" Value=".ccsc"/>
                 </RegistryKey>
 

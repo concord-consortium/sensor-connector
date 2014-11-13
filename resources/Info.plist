@@ -70,7 +70,7 @@
                     <key>public.filename-extension</key>
                     <string>ccsc</string>
                     <key>public.mime-type</key>
-                    <string>application/vnd.concordconsortium.sensorconnector</string>
+                    <string>application/vnd-concordconsortium-sensorconnector</string>
                 </dict>
             </dict>
         </array>
