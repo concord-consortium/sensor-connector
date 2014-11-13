@@ -70,6 +70,7 @@
                 </RegistryKey>
 
                 <!-- Setup registry keys for browser plugin -->
+                <RegistryValue Root="HKLM" Key="Software\Microsoft\Internet Explorer\NavigatorPluginsList\SensorConnectorDetection" Type="string" Name="application/vnd-concordconsortium-sensorconnector" Value="" Action="write"/>
                 <File Id="filE9CB606746FBB9C634831C88DC71AD4C" Name="npSensorConnectorDetection.dll" Source="app\npSensorConnectorDetection.dll">
                     <TypeLib Id="{2D0859C8-380E-53B2-B45C-6B1E4BEAD341}" Description="SensorConnectorDetection 1.0 Type Library" HelpDirectory="APPLICATIONFOLDER" Language="0" MajorVersion="1" MinorVersion="0">
                         <AppId Description="FireBreathWin" Id="{B415CD14-B45D-4BCA-B552-B06175C38606}">
