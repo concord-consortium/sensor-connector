@@ -50,6 +50,11 @@ public class SensorHandler extends AbstractHandler implements DataSink {
 		baseRequest.setHandled(true);
 		JSONObject json = new JSONObject();
 
+		response.setCharacterEncoding("UTF-8");
+		response.setContentType("application/json");
+		response.setHeader("Access-Control-Allow-Origin", "*");
+		response.setHeader("Access-Control-Allow-Methods", "GET");
+
 		if (target.equals("/") || target.equals("/status")) {
 			json.put("sessionID", sessionId);
 			json.put("sessionDesc", "");
@@ -80,10 +85,6 @@ public class SensorHandler extends AbstractHandler implements DataSink {
 		}
 		
 		json.put("currentState", stateManager.currentState().getName());
-		response.setContentType("application/json");
-		response.setCharacterEncoding("UTF-8");
-		response.setHeader("Access-Control-Allow-Origin", "*");
-		response.setHeader("Access-Control-Allow-Methods", "GET");
 		response.setStatus(HttpServletResponse.SC_OK);
 		response.getWriter().println(json.toJSONString());
 	}

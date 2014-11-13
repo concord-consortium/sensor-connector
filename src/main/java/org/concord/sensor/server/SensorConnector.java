@@ -57,6 +57,7 @@ public class SensorConnector extends JFrame
 		}
 
     	final SensorHandler handler = new SensorHandler();
+    	handler.init();
     	
     	server = new Server();
 
@@ -81,7 +82,6 @@ public class SensorConnector extends JFrame
     		httpsConnector.setHost(host);
 	        try {
 	        	server.start();
-	        	handler.init();
 	        	break;
 	        } catch (BindException e) {
 	        	System.err.println("Ports 11180,11181 already in use on " + host);
