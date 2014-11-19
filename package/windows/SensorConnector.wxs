@@ -1,14 +1,33 @@
 <?xml version="1.0" encoding="utf-8"?>
 <Wix xmlns="http://schemas.microsoft.com/wix/2006/wi"
      xmlns:util="http://schemas.microsoft.com/wix/UtilExtension">
+
+    <?define UpgradeCode="{b5f2e77a-9a6a-46ca-be60-c9e181b15c63}"?>
+    <?define ProductVersion="2.0.0.0" ?>
+    <?define RTMProductVersion="1.0.0.0" ?>
+
     <Product Id="96a7a5c2-df77-411b-ba25-842d7fc9f7e0" Name="SensorConnector"
-             Language="1033" Version="1.0.0.6"
+             Language="1033" Version="$(var.ProductVersion)"
              Manufacturer="Concord Consortium"
-             UpgradeCode="b5f2e77a-9a6a-46ca-be60-c9e181b15c63">
+             UpgradeCode="$(var.UpgradeCode)">
         <Package Description="Sensor Connector Application" Comments="None"
                  InstallerVersion="200" Compressed="yes"
                  InstallScope="perMachine"/>
         <Media Id="1" Cabinet="simple.cab" EmbedCab="yes" />
+
+        <Upgrade Id="$(var.UpgradeCode)">
+          <UpgradeVersion Minimum="$(var.ProductVersion)"
+                          IncludeMinimum="no"
+                          OnlyDetect="yes"
+                          Language="1033"
+                          Property="NEWPRODUCTFOUND" />
+          <UpgradeVersion Minimum="$(var.RTMProductVersion)"
+                          IncludeMinimum="yes"
+                          Maximum="$(var.ProductVersion)"
+                          IncludeMaximum="no"
+                          Language="1033"
+                          Property="UPGRADEFOUND" />
+        </Upgrade>
 
         <!-- We use RemoveFolderEx to ensure application folder is fully
              removed on uninstall. Including files created outside of MSI
@@ -69,38 +88,6 @@
                     <RegistryValue Type="string" Value=".ccsc"/>
                 </RegistryKey>
 
-                <!-- Setup registry keys for browser plugin -->
-                <RegistryValue Root="HKLM" Key="Software\Microsoft\Internet Explorer\NavigatorPluginsList\SensorConnectorDetection" Type="string" Name="application/vnd-concordconsortium-sensorconnector" Value="" Action="write"/>
-                <File Id="filE9CB606746FBB9C634831C88DC71AD4C" Name="npSensorConnectorDetection.dll" Source="app\npSensorConnectorDetection.dll">
-                    <TypeLib Id="{2D0859C8-380E-53B2-B45C-6B1E4BEAD341}" Description="SensorConnectorDetection 1.0 Type Library" HelpDirectory="APPLICATIONFOLDER" Language="0" MajorVersion="1" MinorVersion="0">
-                        <AppId Description="FireBreathWin" Id="{B415CD14-B45D-4BCA-B552-B06175C38606}">
-                            <Class Id="{8DB0C771-727B-5AAC-B545-61A7F03F0A39}" Context="InprocServer32" Description="A simple plugin for detecting and launching the Sensor Connector application." ThreadingModel="apartment" Version="1" Programmable="yes" Control="yes">
-                                <ProgId Id="ConcordConsortium.SensorConnectorDetection.1" Description="A simple plugin for detecting and launching the Sensor Connector application.">
-                                    <ProgId Id="ConcordConsortium.SensorConnectorDetection" Description="A simple plugin for detecting and launching the Sensor Connector application." />
-                                </ProgId>
-                            </Class>
-                        </AppId>
-                        <Interface Id="{39FEDAC8-E6B0-54AB-84DC-F0DEBA86D26B}" Name="IFBComJavascriptObject" ProxyStubClassId32="{00020424-0000-0000-C000-000000000046}" xmlns="http://schemas.microsoft.com/wix/2006/wi" />
-                        <Interface Id="{7AAD8978-1D25-5C7A-A80B-1E41ED73771F}" Name="IFBComEventSource" ProxyStubClassId32="{00020420-0000-0000-C000-000000000046}" xmlns="http://schemas.microsoft.com/wix/2006/wi" />
-                        <Interface Id="{AF9284C1-793A-57FF-8315-AAE65E8A2AEB}" Name="IFBControl" ProxyStubClassId32="{00020424-0000-0000-C000-000000000046}" xmlns="http://schemas.microsoft.com/wix/2006/wi" />
-                    </TypeLib>
-                </File>
-                <ProgId Id="MIME" />
-                <RegistryValue Key="AppID\npSensorConnectorDetection.dll" Value="{B415CD14-B45D-4BCA-B552-B06175C38606}" Type="string" Action="write" Name="AppID" Root="HKCR" />
-                <RegistryValue Key="CLSID\{8db0c771-727b-5aac-b545-61a7f03f0a39}\MiscStatus\1" Value="131473" Type="string" Action="write" Root="HKCR" />
-                <RegistryValue Key="CLSID\{8db0c771-727b-5aac-b545-61a7f03f0a39}\MiscStatus" Value="0" Type="string" Action="write" Root="HKCR" />
-                <RegistryValue Key="MIME\Database\Content Type\application/vnd-concordconsortium-sensorconnector" Value="A simple plugin for detecting and launching the Sensor Connector application." Type="string" Action="write" Root="HKCR" />
-                <RegistryValue Key="MIME\Database\Content Type\application/vnd-concordconsortium-sensorconnector" Value="" Type="string" Action="write" Name="Extension" Root="HKCR" />
-                <RegistryValue Key="MIME\Database\Content Type\application/vnd-concordconsortium-sensorconnector" Value="{8db0c771-727b-5aac-b545-61a7f03f0a39}" Type="string" Action="write" Name="CLSID" Root="HKCR" />
-                <RegistryValue Key="Software\Microsoft\Windows\CurrentVersion\Ext\PreApproved\{8db0c771-727b-5aac-b545-61a7f03f0a39}" Value="" Type="string" Action="write" Root="HKCU" />
-                <RegistryValue Key="Software\Microsoft\Windows\CurrentVersion\Ext\Stats\{8db0c771-727b-5aac-b545-61a7f03f0a39}\iexplore\AllowedDomains\*" Value="" Type="string" Action="write" Root="HKCU" />
-                <RegistryValue Key="Software\Microsoft\Windows\CurrentVersion\Ext\Stats\{8db0c771-727b-5aac-b545-61a7f03f0a39}\iexplore" Value="0" Type="integer" Action="write" Name="Count" Root="HKCU" />
-                <RegistryValue Key="Software\MozillaPlugins\concord.org/SensorConnectorDetection" Value="[#filE9CB606746FBB9C634831C88DC71AD4C]" Type="string" Action="write" Name="Path" Root="HKCU" />
-                <RegistryValue Key="Software\Microsoft\Windows\CurrentVersion\Ext\PreApproved\{8db0c771-727b-5aac-b545-61a7f03f0a39}" Value="" Type="string" Action="write" Root="HKLM" />
-                <RegistryValue Key="Software\Microsoft\Windows\CurrentVersion\Ext\Stats\{8db0c771-727b-5aac-b545-61a7f03f0a39}\iexplore\AllowedDomains\*" Value="" Type="string" Action="write" Root="HKLM" />
-                <RegistryValue Key="Software\Microsoft\Windows\CurrentVersion\Ext\Stats\{8db0c771-727b-5aac-b545-61a7f03f0a39}\iexplore" Value="0" Type="integer" Action="write" Name="Count" Root="HKLM" />
-                <RegistryValue Key="Software\MozillaPlugins\concord.org/SensorConnectorDetection" Value="[#filE9CB606746FBB9C634831C88DC71AD4C]" Type="string" Action="write" Name="Path" Root="HKLM" />
-
                 <!-- We need to use APPLICATIONFOLDER variable here or RemoveFolderEx
                      will not remove on "install". But only if WiX 3.6 is used. -->
 
@@ -112,5 +99,18 @@
         <UI/>
         <Icon Id="DesktopIcon.exe" SourceFile="SensorConnector.ico" />
         <Icon Id="StartMenuIcon.exe" SourceFile="SensorConnector.ico" />
+
+        <!-- Prevent downgrading -->
+        <CustomAction Id="PreventDowngrading" Error="Newer version already installed." />
+
+        <!-- Sequences -->
+        <InstallExecuteSequence>
+          <Custom Action="PreventDowngrading" After="FindRelatedProducts">NEWPRODUCTFOUND</Custom>
+          <RemoveExistingProducts After="InstallValidate" />
+        </InstallExecuteSequence>
+
+        <InstallUISequence>
+          <Custom Action="PreventDowngrading" After="FindRelatedProducts">NEWPRODUCTFOUND</Custom>
+        </InstallUISequence>
     </Product>
 </Wix>

@@ -89,9 +89,6 @@
         <fx:fileset dir="${env.JAVA_HOME}/jre/bin">
           <include name="msvcr100.dll" />
         </fx:fileset>
-        <fx:fileset dir="resources">
-          <include name="npSensorConnectorDetection.dll" />
-        </fx:fileset>
       </fx:resources>
     </fx:deploy>
     <exec executable="signtool.exe" dir="dist/bundles" failonerror="false">
