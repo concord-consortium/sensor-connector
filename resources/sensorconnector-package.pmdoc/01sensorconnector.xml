@@ -1,12 +1,12 @@
 <pkgref spec="1.12" uuid="CB9F5768-E137-4351-9FB7-6FCFB98694BC">
 <config>
 <identifier>org.concord.sensorConnector.SensorConnector.pkg</identifier>
-<version>1.0.0.20141106</version>
+<version>1.0.0.20150710</version>
 <description>
 </description>
 <post-install type="none"/>
-<installFrom relative="true" mod="true" includeRoot="true">SensorConnector.app</installFrom>
-<installTo mod="true">/Applications</installTo>
+<installFrom relative="true" mod="true">SensorConnector.app</installFrom>
+<installTo mod="true" relocatable="true">/Applications</installTo>
 <flags>
 <mod>followSymbolicLinks</mod>
 </flags>
@@ -16,11 +16,15 @@
 <mod>postInstall</mod>
 <mod>installFrom.path</mod>
 <mod>requireAuthorization</mod>
+<mod>parent</mod>
 <mod>version</mod>
 <mod>extraFiles</mod>
-<mod>parent</mod>
 <mod>installTo.path</mod>
+<mod>scripts.postinstall.isRelativeType</mod>
 </config>
+<scripts>
+<postinstall relative="true" mod="true">mac-install-cert.sh</postinstall>
+</scripts>
 <contents>
 <file-list>01sensorconnector-contents.xml</file-list>
 <filter>/CVS$</filter>

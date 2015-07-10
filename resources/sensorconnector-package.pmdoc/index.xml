@@ -16,18 +16,16 @@
 <contents>
 <choice title="SensorConnector" id="choice0" starts_selected="true" starts_enabled="true" starts_hidden="true">
 <pkgref id="org.concord.sensorConnector.SensorConnector.pkg"/>
-<pkgref id="org.concord.sensorConnector.npSensorConnectorDetection.pkg"/>
 </choice>
 </contents>
 <resources bg-scale="none" bg-align="topleft"/>
 <flags/>
 <extra-files/>
 <item type="file">01sensorconnector.xml</item>
-<item type="file">02npsensorconnectordetection.xml</item>
-<mod>properties.systemDomain</mod>
+<mod>extraFiles</mod>
 <mod>properties.title</mod>
 <mod>properties.customizeOption</mod>
 <mod>properties.userDomain</mod>
 <mod>properties.anywhereDomain</mod>
-<mod>extraFiles</mod>
+<mod>properties.systemDomain</mod>
 </pkmkdoc>
