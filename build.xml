@@ -90,7 +90,7 @@
           <include name="msvcr100.dll" />
         </fx:fileset>
         <fx:fileset dir="resources">
-          <include name="npSensorConnectorDetection.dll" />
+          <include name="ca.cert.pem" />
         </fx:fileset>
       </fx:resources>
     </fx:deploy>

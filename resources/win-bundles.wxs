@@ -1,7 +1,7 @@
 <?xml version="1.0"?>
 <Wix xmlns="http://schemas.microsoft.com/wix/2006/wi" xmlns:util="http://schemas.microsoft.com/wix/UtilExtension" xmlns:bal="http://schemas.microsoft.com/wix/BalExtension">
   <Bundle
-      Version="1.0.0.6"
+      Version="1.0.0.7"
       AboutUrl="http://sensorconnector.concord.org/"
       DisableModify="yes"
       Manufacturer="Concord Consortium, Inc."
