@@ -6,7 +6,7 @@ mv dist/app/SensorConnector.app dist/package/
 
 # Requires PackageMaker to be installed in /Applications
 cp -r resources/sensorconnector-package.pmdoc dist/package
-cp resources/ca.cert.pm dist/package
+cp resources/ca.cert.pem dist/package
 cp resources/mac-install-cert.sh dist/package
 chmod a+x dist/package/mac-install-cert.sh
 
