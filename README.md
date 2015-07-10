@@ -93,3 +93,8 @@ After installing the pre-requisites, fire up your terminal.
 
 - The **application** will be created as `dist/app/SensorConnector.app`
 - The **.dmg** with the application will be created as `dist/SensorConnector-{TIMESTAMP}-1.dmg`
+
+## Updating the server certificate
+
+- Generate the new certificate keystore using the tools in the (ssl-ca)[https://github.com/concord-consortium/ssl-ca] project.
+- Replace the existing keystore file: `src/main/resources/server.jks`

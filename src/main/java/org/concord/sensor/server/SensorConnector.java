@@ -62,7 +62,7 @@ public class SensorConnector extends JFrame
     	server = new Server();
 
 		SslContextFactory sslContextFactory = new SslContextFactory(SensorConnector.class.getResource("/server.jks").toExternalForm());
-		sslContextFactory.setKeyStorePassword("123456");
+		sslContextFactory.setKeyStorePassword("concord");
     	
     	SocketConnector httpConnector = new SocketConnector();
     	SslSocketConnector httpsConnector = new SslSocketConnector(sslContextFactory);
