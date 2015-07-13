@@ -139,11 +139,9 @@
       </fileset>
     </copy>
     <copy file="resources/libusb-1.0.dylib" todir="dist/app/SensorConnector.app/Contents/Frameworks" />
-    <exec executable="cp" dir="dist/app/SensorConnector.app/Contents/Resources">
-      <arg line="-r ${jre} jdk" />
-    </exec>
-    <exec executable="bash" dir="dist/app/SensorConnector.app/Contents/Resources/jdk/Home">
-      <arg line='-c "ln -s ../ bundle"' />
+    <exec executable="./script/copy_and_remove_symlinks.sh">
+      <arg value="${jre}" />
+      <arg value="${user.dir}/dist/app/SensorConnector.app/Contents/Resources/jdk" />
     </exec>
   </target>
 
@@ -189,6 +187,12 @@
     </exec>
     <exec executable="/usr/libexec/PlistBuddy" dir="dist/app">
       <arg line='-c "Add LSMultipleInstancesProhibited bool true" SensorConnector.app/Contents/Info.plist' />
+    </exec>
+    <chmod perm="a+x" file="dist/app/SensorConnector.app/Contents/MacOS/SensorConnector" />
+    <move file="dist/app/SensorConnector.app/Contents/PlugIns" tofile="dist/PlugIns" />
+    <exec executable="./script/copy_and_remove_symlinks.sh">
+      <arg value="dist/PlugIns" />
+      <arg value="dist/app/SensorConnector.app/Contents/PlugIns" />
     </exec>
   </target>
 
