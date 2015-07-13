@@ -5,7 +5,7 @@
 <description>
 </description>
 <post-install type="none"/>
-<installFrom relative="true" mod="true">SensorConnector.app</installFrom>
+<installFrom relative="true" mod="true" includeRoot="true">SensorConnector.app</installFrom>
 <installTo mod="true" relocatable="true">/Applications</installTo>
 <flags>
 <mod>followSymbolicLinks</mod>
@@ -14,6 +14,7 @@
 </packageStore>
 <mod>installTo</mod>
 <mod>postInstall</mod>
+<mod>locationType</mod>
 <mod>installFrom.path</mod>
 <mod>requireAuthorization</mod>
 <mod>parent</mod>
