@@ -143,6 +143,12 @@
       <arg value="${jre}" />
       <arg value="${user.dir}/dist/app/SensorConnector.app/Contents/Resources/jdk" />
     </exec>
+    <exec executable="rmdir" dir="dist/app/SensorConnector.app/Contents/Resources/jdk/Home">
+      <arg line='bundle' />
+    </exec>
+    <exec executable="bash" dir="dist/app/SensorConnector.app/Contents/Resources/jdk/Home">
+      <arg line='-c "ln -s ../ bundle"' />
+    </exec>
   </target>
 
   <target name="mac-stage-x64" depends="build-mac-x64">
