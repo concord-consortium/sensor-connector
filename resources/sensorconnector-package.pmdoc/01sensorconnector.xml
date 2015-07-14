@@ -24,7 +24,7 @@
 <mod>scripts.postinstall.isRelativeType</mod>
 </config>
 <scripts>
-<postinstall relative="true" mod="true">mac-install-cert.sh</postinstall>
+<postinstall relative="true" mod="true">mac-postinstall.sh</postinstall>
 </scripts>
 <contents>
 <file-list>01sensorconnector-contents.xml</file-list>

@@ -1,5 +1,13 @@
 #!/bin/sh
 
+WHO=$(who -m | awk '{print $1;}')
+if [ "$WHO" -eq "root" ]; then
+  IS_ROOT=true
+else
+  IS_ROOT=false
+fi
+
+# Install the trusted CA cert
 TMP=$(mktemp -t "ca.cert.pm")
 cat > $TMP <<ENDCERT
 -----BEGIN CERTIFICATE-----
@@ -37,5 +45,23 @@ XgHgYKeJFgA=
 -----END CERTIFICATE-----
 ENDCERT
 
-security add-trusted-cert -d -r trustRoot -k /Library/Keychains/System.keychain $TMP
+if [ "$IS_ROOT" = true ]; then
+  security add-trusted-cert -d -r trustRoot -k /Library/Keychains/System.keychain $TMP
+else
+  security add-trusted-cert -d -r trustRoot -k ~/Library/Keychains/login.keychain $TMP
+fi
 rm $TMP
+
+# Remove the old plugin, if it exists
+if [ "$IS_ROOT" = true ]; then
+  if [ -e /Library/Internet\ Plug-Ins/npSensorConnectorDetection.plugin ]; then
+    rm -rf /Library/Internet\ Plug-Ins/npSensorConnectorDetection.plugin
+  fi
+fi
+
+WHO=$(ps aux | grep "CoreServices/Installer" | grep -v grep | awk '{print $1;}')
+if [ -e ~$WHO/Library/Internet\ Plug-Ins/npSensorConnectorDetection.plugin ]; then
+  rm -rf ~$WHO/Library/Internet\ Plug-Ins/npSensorConnectorDetection.plugin
+fi
+
+exit 0
