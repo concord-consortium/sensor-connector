@@ -14,5 +14,5 @@
     <choice id="org.concord.sensorconnector.app.pkg" visible="false">
         <pkg-ref id="org.concord.sensorconnector.app.pkg"/>
     </choice>
-    <pkg-ref id="org.concord.sensorconnector.app.pkg" version="1.0.0.20150715" onConclusion="none">SensorConnectorApp.pkg</pkg-ref>
+    <pkg-ref id="org.concord.sensorconnector.app.pkg" onConclusion="none">SensorConnectorApp.pkg</pkg-ref>
 </installer-gui-script>
