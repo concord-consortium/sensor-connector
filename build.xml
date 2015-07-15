@@ -41,6 +41,8 @@
     <mkdir dir="dist/app" />
     <mkdir dir="dist/app/.background" />
     <mkdir dir="dist/package" />
+    <mkdir dir="dist/package/scripts" />
+    <mkdir dir="dist/package/resources" />
   </target>
 
   <target name="build" depends="prep">

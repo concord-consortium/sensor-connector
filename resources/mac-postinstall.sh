@@ -1,7 +1,7 @@
-#!/bin/sh
+#!/bin/bash
 
 WHO=$(who -m | awk '{print $1;}')
-if [ "$WHO" -eq "root" ]; then
+if [ "$WHO" = "root" ]; then
   IS_ROOT=true
 else
   IS_ROOT=false
@@ -45,10 +45,15 @@ XgHgYKeJFgA=
 -----END CERTIFICATE-----
 ENDCERT
 
+ORIGINAL_USER=$(ps aux | grep "CoreServices/Installer" | grep -v grep | awk '{print $1;}')
 if [ "$IS_ROOT" = true ]; then
   security add-trusted-cert -d -r trustRoot -k /Library/Keychains/System.keychain $TMP
 else
-  security add-trusted-cert -d -r trustRoot -k ~/Library/Keychains/login.keychain $TMP
+  # for whatever reason, the tilde doesn't get expanded unless we eval it
+  eval cd ~$ORIGINAL_USER
+  echo "from: $(pwd); security -v add-trusted-cert -k $(pwd)/Library/Keychains/login.keychain $TMP" > /tmp/installer.txt
+  security -v add-trusted-cert -k $(pwd)/Library/Keychains/login.keychain $TMP >> /tmp/installer.txt 2>&1
+  cd -
 fi
 rm $TMP
 
@@ -59,9 +64,11 @@ if [ "$IS_ROOT" = true ]; then
   fi
 fi
 
-WHO=$(ps aux | grep "CoreServices/Installer" | grep -v grep | awk '{print $1;}')
-if [ -e ~$WHO/Library/Internet\ Plug-Ins/npSensorConnectorDetection.plugin ]; then
-  rm -rf ~$WHO/Library/Internet\ Plug-Ins/npSensorConnectorDetection.plugin
+# for whatever reason, the tilde doesn't get expanded unless we eval it
+eval cd ~$ORIGINAL_USER
+if [ -e ./Library/Internet\ Plug-Ins/npSensorConnectorDetection.plugin ]; then
+  rm -rf ./Library/Internet\ Plug-Ins/npSensorConnectorDetection.plugin
 fi
+cd -
 
 exit 0

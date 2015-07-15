@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8" standalone="no"?>
+<installer-gui-script minSpecVersion="1">
+    <title>Sensor Connector</title>
+    <background file="background.png" mime-type="image/png" scaling="tofit" alignment="bottomleft" />
+    <pkg-ref id="org.concord.sensorconnector.app.pkg"/>
+    <options customize="never" require-scripts="false" />
+    <domains enable_anywhere="false" enable_currentUserHome="true" enable_localSystem="true" />
+    <choices-outline>
+        <line choice="default">
+            <line choice="org.concord.sensorconnector.app.pkg"/>
+        </line>
+    </choices-outline>
+    <choice id="default"/>
+    <choice id="org.concord.sensorconnector.app.pkg" visible="false">
+        <pkg-ref id="org.concord.sensorconnector.app.pkg"/>
+    </choice>
+    <pkg-ref id="org.concord.sensorconnector.app.pkg" version="1.0.0.20150715" onConclusion="none">SensorConnectorApp.pkg</pkg-ref>
+</installer-gui-script>
