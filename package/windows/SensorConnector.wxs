@@ -1,8 +1,8 @@
-<?xml version="1.0" encoding="utf-8"?>
+<?xml version="1.0" encoding="windows-1252"?>
 <Wix xmlns="http://schemas.microsoft.com/wix/2006/wi"
      xmlns:util="http://schemas.microsoft.com/wix/UtilExtension">
     <Product Id="96a7a5c2-df77-411b-ba25-842d7fc9f7e0" Name="SensorConnector"
-             Language="1033" Version="1.0.0.7"
+             Language="1033" Codepage="1252" Version="1.0.0.7"
              Manufacturer="Concord Consortium"
              UpgradeCode="b5f2e77a-9a6a-46ca-be60-c9e181b15c63">
         <Package Description="Sensor Connector Application" Comments="None"
@@ -33,39 +33,23 @@
                                    KeyPath="yes" />
 
                 <!-- Register the ccsc: external protocol and .ccsc file type handler -->
-                <RegistryKey Root="HKCR" Key=".ccsc">
+                <RegistryKey Root="HKLM" Key="Software\Classes\.ccsc">
                     <RegistryValue Type="string" Value="ccsc"/>
                     <RegistryValue Type="string" Name="Content Type" Value="application/vnd-concordconsortium-sensorconnector"/>
                 </RegistryKey>
-                <RegistryKey Root="HKCR" Key="ccsc">
+                <RegistryKey Root="HKLM" Key="Software\Classes\ccsc">
                     <RegistryValue Type="string" Value="URL:ccsc Protocol Handler"/>
                     <RegistryValue Type="string" Name="URL Protocol" Value=""/>
                 </RegistryKey>
-                <RegistryKey Root="HKCR" Key="ccsc\DefaultIcon">
+                <RegistryKey Root="HKLM" Key="Software\Classes\ccsc\DefaultIcon">
                     <RegistryValue Type="string" Value="[APPLICATIONFOLDER]SensorConnector.ico"/>
                 </RegistryKey>
-                <RegistryKey Root="HKCR" Key="ccsc\shell" ForceCreateOnInstall="yes" />
-                <RegistryKey Root="HKCR" Key="ccsc\shell\open" ForceCreateOnInstall="yes" />
-                <RegistryKey Root="HKCR" Key="ccsc\shell\open\command">
+                <RegistryKey Root="HKLM" Key="Software\Classes\ccsc\shell" ForceCreateOnInstall="yes" />
+                <RegistryKey Root="HKLM" Key="Software\Classes\ccsc\shell\open" ForceCreateOnInstall="yes" />
+                <RegistryKey Root="HKLM" Key="Software\Classes\ccsc\shell\open\command">
                     <RegistryValue Type="string" Value='"[APPLICATIONFOLDER]SensorConnector.exe" "%1"'/>
                 </RegistryKey>
-                <RegistryKey Root="HKCU" Key="Software\Classes\.ccsc">
-                    <RegistryValue Type="string" Value="ccsc"/>
-                    <RegistryValue Type="string" Name="Content Type" Value="application/vnd-concordconsortium-sensorconnector"/>
-                </RegistryKey>
-                <RegistryKey Root="HKCU" Key="Software\Classes\ccsc">
-                    <RegistryValue Type="string" Value="URL:ccsc Protocol Handler"/>
-                    <RegistryValue Type="string" Name="URL Protocol" Value=""/>
-                </RegistryKey>
-                <RegistryKey Root="HKCU" Key="Software\Classes\ccsc\DefaultIcon">
-                    <RegistryValue Type="string" Value="[APPLICATIONFOLDER]SensorConnector.ico"/>
-                </RegistryKey>
-                <RegistryKey Root="HKCU" Key="Software\Classes\ccsc\shell" ForceCreateOnInstall="yes" />
-                <RegistryKey Root="HKCU" Key="Software\Classes\ccsc\shell\open" ForceCreateOnInstall="yes" />
-                <RegistryKey Root="HKCU" Key="Software\Classes\ccsc\shell\open\command">
-                    <RegistryValue Type="string" Value='"[APPLICATIONFOLDER]SensorConnector.exe" "%1"'/>
-                </RegistryKey>
-                <RegistryKey Root="HKCU" Key="Software\Classes\MIME\Database\Content Type\application/vnd-concordconsortium-sensorconnector">
+                <RegistryKey Root="HKLM" Key="Software\Classes\MIME\Database\Content Type\application/vnd-concordconsortium-sensorconnector">
                     <RegistryValue Type="string" Value=".ccsc"/>
                 </RegistryKey>
 
@@ -80,10 +64,9 @@
         <UI/>
         <Icon Id="DesktopIcon.exe" SourceFile="SensorConnector.ico" />
         <Icon Id="StartMenuIcon.exe" SourceFile="SensorConnector.ico" />
-        <CustomAction Id='InstallCert' Directory='INSTALLDIR' Execute='immediate'
-                      ExeCommand='certutil -addstore "ROOT" ca.cert.pem' Return='ignore' />
-        <CustomAction Id='RemoveCert' Directory='INSTALLDIR' Execute='immediate'
-                      ExeCommand='certutil -delstore "ROOT" ‎00b0c498029e051aed' Return='ignore' />
+
+        <CustomAction Id='InstallCert' Directory='APPLICATIONFOLDER' Execute='immediate' ExeCommand='certutil -addstore "ROOT" ca.cert.pem' Return='ignore' />
+        <CustomAction Id='RemoveCert'  Directory='APPLICATIONFOLDER' Execute='immediate' ExeCommand='certutil -delstore "ROOT" ‎‎00b0c498029e051aed' Return='ignore' />
 
         <InstallExecuteSequence>
             <Custom Action='InstallCert' After='InstallFinalize'>NOT Installed</Custom>
