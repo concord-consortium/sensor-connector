@@ -81,7 +81,7 @@
         <include name="sensor-connector-*.jar" />
       </fileset>
     </copy>
-    <fx:deploy verbose="true" nativeBundles="all" width="100" height="100" outdir="dist/" outfile="SensorConnector">
+    <fx:deploy verbose="true" nativeBundles="msi" width="100" height="100" outdir="dist/" outfile="SensorConnector">
       <info title="Sensor Connector" vendor="Concord Consortium" description="Sensor Connector Application" />
       <fx:application mainClass="org.concord.sensor.server.SensorConnector" toolkit="swing"/>
       <fx:resources>
@@ -115,6 +115,7 @@
     <exec executable="insignia.exe" dir="dist" failonerror="false">
       <arg line='-ab engine.exe SensorConnector-${DSTAMP}-${TSTAMP}-unsigned.exe -o SensorConnector-${DSTAMP}-${TSTAMP}.exe' />
     </exec>
+    <echo message="Built version: ${DSTAMP}-${TSTAMP}" />
   </target>
 
   <target name="mac-stage" depends="build">

@@ -2,11 +2,12 @@
 <Wix xmlns="http://schemas.microsoft.com/wix/2006/wi"
      xmlns:util="http://schemas.microsoft.com/wix/UtilExtension">
     <Product Id="96a7a5c2-df77-411b-ba25-842d7fc9f7e0" Name="SensorConnector"
-             Language="1033" Codepage="1252" Version="1.0.0.7"
+             Language="1033" Codepage="1252" Version="1.0.0.13"
              Manufacturer="Concord Consortium"
              UpgradeCode="b5f2e77a-9a6a-46ca-be60-c9e181b15c63">
         <Package Description="Sensor Connector Application" Comments="None"
-                 InstallerVersion="200" Compressed="yes"
+                 InstallerVersion="310" Compressed="yes"
+                 InstallPrivileges="elevated"
                  InstallScope="perMachine"/>
         <Media Id="1" Cabinet="simple.cab" EmbedCab="yes" />
 
@@ -56,8 +57,7 @@
                 <!-- We need to use APPLICATIONFOLDER variable here or RemoveFolderEx
                      will not remove on "install". But only if WiX 3.6 is used. -->
 
-                  <util:RemoveFolderEx On="uninstall" Property="APPLICATIONFOLDER" />
-
+                <util:RemoveFolderEx On="uninstall" Property="APPLICATIONFOLDER" />
             </Component>
         </DirectoryRef>
         <?include bundle.wxi ?>
@@ -65,12 +65,15 @@
         <Icon Id="DesktopIcon.exe" SourceFile="SensorConnector.ico" />
         <Icon Id="StartMenuIcon.exe" SourceFile="SensorConnector.ico" />
 
-        <CustomAction Id='InstallCert' Directory='APPLICATIONFOLDER' Execute='immediate' ExeCommand='certutil -addstore "ROOT" ca.cert.pem' Return='ignore' />
-        <CustomAction Id='RemoveCert'  Directory='APPLICATIONFOLDER' Execute='immediate' ExeCommand='certutil -delstore "ROOT" ‎‎00b0c498029e051aed' Return='ignore' />
+        <Property Id='CERTUTIL'>certutil.exe</Property>
+        <CustomAction Id='SetCertUtil' Property="CERTUTIL" Value="[SystemFolder]certutil.exe" />
+        <CustomAction Id='InstallCert' Impersonate="no" Execute='commit' Property="CERTUTIL" ExeCommand='-addstore ROOT "[APPLICATIONFOLDER]app\ca.cert.pem"' Return='check' />
+        <CustomAction Id='RemoveCert'  Impersonate="no" Execute='commit' Property="CERTUTIL" ExeCommand='-delstore ROOT 00b0c498029e051aed' Return='check' />
 
         <InstallExecuteSequence>
-            <Custom Action='InstallCert' After='InstallFinalize'>NOT Installed</Custom>
-            <Custom Action='RemoveCert' After='InstallInitialize'>(NOT UPGRADINGPRODUCTCODE) AND (REMOVE="ALL")</Custom>
+            <Custom Action='SetCertUtil' Before='InstallInitialize' />
+            <Custom Action='RemoveCert'  After='InstallInitialize'>Installed</Custom>
+            <Custom Action='InstallCert' After='InstallFiles'>UPGRADINGPRODUCTCODE OR (NOT Installed)</Custom>
         </InstallExecuteSequence>
     </Product>
 </Wix>
