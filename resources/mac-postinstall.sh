@@ -1,5 +1,6 @@
 #!/bin/bash
 
+DIR="$2/SensorConnector.app/Contents/Resources/"
 WHO=$(who -m | awk '{print $1;}')
 if [ "$WHO" = "root" ]; then
   IS_ROOT=true
@@ -51,10 +52,71 @@ if [ "$IS_ROOT" = true ]; then
 else
   # for whatever reason, the tilde doesn't get expanded unless we eval it
   eval cd ~$ORIGINAL_USER
-  echo "from: $(pwd); security -v add-trusted-cert -k $(pwd)/Library/Keychains/login.keychain $TMP" > /tmp/installer.txt
-  security -v add-trusted-cert -k $(pwd)/Library/Keychains/login.keychain $TMP >> /tmp/installer.txt 2>&1
+  security -v add-trusted-cert -k $(pwd)/Library/Keychains/login.keychain $TMP
   cd -
 fi
+
+# install the cert into existing Firefox profiles
+if [ "$IS_ROOT" = true ]; then
+  eval cd ~$ORIGINAL_USER
+  cd ..
+  for home in `ls`; do
+    pushd $home
+    if [ -e "Library/Application Support/Firefox/Profiles" ]; then
+      pushd "Library/Application Support/Firefox/Profiles"
+      for i in `ls`; do
+        pushd $i
+        "$DIR/certutilff" -A -n "Concord Consortium" -t "CT,C,C" -i "$TMP" -d .
+        popd
+      done
+      popd
+    fi
+    popd
+  done
+
+  # /Applications/Firefox.app/Contents/MacOS/browser/defaults/profile
+  if [ -e "/Applications/Firefox.app" ]; then
+    pushd "/Applications/Firefox.app/Contents/MacOS/"
+    if [ ! -e 'browser' ]; then
+      mkdir browser
+    fi
+    pushd "browser"
+
+    if [ ! -e 'defaults' ]; then mkdir defaults; fi
+    pushd "defaults"
+    if [ ! -e 'profile' ]; then mkdir profile; fi
+    pushd "profile"
+    "$DIR/certutilff" -A -n "Concord Consortium" -t "CT,C,C" -i "$TMP" -d .
+  fi
+else
+  eval cd ~$ORIGINAL_USER
+  if [ -e "Library/Application Support/Firefox/Profiles" ]; then
+    pushd "Library/Application Support/Firefox/Profiles"
+    for i in `ls`; do
+      pushd $i
+      "$DIR/certutilff" -A -n "Concord Consortium" -t "CT,C,C" -i "$TMP" -d .
+      popd
+    done
+    popd
+  fi
+fi
+
+eval cd ~$ORIGINAL_USER
+# ~/Applications/Firefox.app/Contents/MacOS/browser/defaults/profile
+if [ -e "Applications/Firefox.app" ]; then
+  pushd "Applications/Firefox.app/Contents/MacOS/"
+  if [ ! -e 'browser' ]; then
+    mkdir browser
+  fi
+  pushd "browser"
+
+  if [ ! -e 'defaults' ]; then mkdir defaults; fi
+  pushd "defaults"
+  if [ ! -e 'profile' ]; then mkdir profile; fi
+  pushd "profile"
+  "$DIR/certutilff" -A -n "Concord Consortium" -t "CT,C,C" -i "$TMP" -d .
+fi
+
 rm $TMP
 
 # Remove the old plugin, if it exists
