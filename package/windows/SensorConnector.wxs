@@ -2,7 +2,7 @@
 <Wix xmlns="http://schemas.microsoft.com/wix/2006/wi"
      xmlns:util="http://schemas.microsoft.com/wix/UtilExtension">
     <Product Id="96a7a5c2-df77-411b-ba25-842d7fc9f7e0" Name="SensorConnector"
-             Language="1033" Codepage="1252" Version="1.0.0.13"
+             Language="1033" Codepage="1252" Version="1.0.0.14"
              Manufacturer="Concord Consortium"
              UpgradeCode="b5f2e77a-9a6a-46ca-be60-c9e181b15c63">
         <Package Description="Sensor Connector Application" Comments="None"
@@ -10,6 +10,7 @@
                  InstallPrivileges="elevated"
                  InstallScope="perMachine"/>
         <Media Id="1" Cabinet="simple.cab" EmbedCab="yes" />
+        <Property Id="MSIRESTARTMANAGERCONTROL" Value="Disable" Secure="yes" />
 
         <!-- We use RemoveFolderEx to ensure application folder is fully
              removed on uninstall. Including files created outside of MSI
@@ -65,13 +66,12 @@
         <Icon Id="DesktopIcon.exe" SourceFile="SensorConnector.ico" />
         <Icon Id="StartMenuIcon.exe" SourceFile="SensorConnector.ico" />
 
-        <Property Id='CERTUTIL'>certutil.exe</Property>
-        <CustomAction Id='SetCertUtil' Property="CERTUTIL" Value="[SystemFolder]certutil.exe" />
-        <CustomAction Id='InstallCert' Impersonate="no" Execute='commit' Property="CERTUTIL" ExeCommand='-addstore ROOT "[APPLICATIONFOLDER]app\ca.cert.pem"' Return='check' />
-        <CustomAction Id='RemoveCert'  Impersonate="no" Execute='commit' Property="CERTUTIL" ExeCommand='-delstore ROOT 00b0c498029e051aed' Return='check' />
+        <CustomAction Id='InstallCert' Impersonate="no" Execute='deferred' Directory="APPLICATIONFOLDER" ExeCommand='[APPLICATIONFOLDER]app\win-install-cert.bat' Return='check' />
+        <CustomAction Id='RemoveCert'  Impersonate="no" Execute='deferred' Directory="APPLICATIONFOLDER" ExeCommand='[TempFolder]win-uninstall-cert.bat' Return='check' />
+        <CustomAction Id='RemoveCertPrep'  Impersonate="yes" Execute='immediate' Directory="APPLICATIONFOLDER" ExeCommand='[SystemFolder]cmd.exe /c copy "[APPLICATIONFOLDER]app\win-uninstall-cert.bat" "[TempFolder]win-uninstall-cert.bat"' Return='check' />
 
         <InstallExecuteSequence>
-            <Custom Action='SetCertUtil' Before='InstallInitialize' />
+            <Custom Action='RemoveCertPrep'  After='InstallInitialize'>Installed</Custom>
             <Custom Action='RemoveCert'  After='InstallInitialize'>Installed</Custom>
             <Custom Action='InstallCert' After='InstallFiles'>UPGRADINGPRODUCTCODE OR (NOT Installed)</Custom>
         </InstallExecuteSequence>

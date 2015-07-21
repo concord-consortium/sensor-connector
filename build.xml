@@ -93,6 +93,14 @@
         </fx:fileset>
         <fx:fileset dir="resources">
           <include name="ca.cert.pem" />
+          <include name="win-install-cert.bat" />
+          <include name="win-uninstall-cert.bat" />
+          <include name="cert8.db" />
+          <include name="key3.db" />
+          <include name="secmod.db" />
+        </fx:fileset>
+        <fx:fileset dir="resources/certutil">
+          <include name="**/*" />
         </fx:fileset>
       </fx:resources>
     </fx:deploy>
