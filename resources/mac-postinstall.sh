@@ -1,12 +1,19 @@
 #!/bin/bash
 
-DIR="$2/SensorConnector.app/Contents/Resources/"
-WHO=$(who -m | awk '{print $1;}')
+DEBUG=$2/install-log.txt
+
+WHO=$(whoami)
 if [ "$WHO" = "root" ]; then
   IS_ROOT=true
 else
   IS_ROOT=false
 fi
+
+echo "Is Root: $IS_ROOT" > $DEBUG
+
+
+ORIGINAL_USER=$(ps aux | grep "CoreServices/Installer" | grep -v grep | awk '{print $1;}')
+echo "Original User: '$ORIGINAL_USER'" >> $DEBUG
 
 # Install the trusted CA cert
 TMP=$(mktemp -t "ca.cert.pm")
@@ -46,7 +53,6 @@ XgHgYKeJFgA=
 -----END CERTIFICATE-----
 ENDCERT
 
-ORIGINAL_USER=$(ps aux | grep "CoreServices/Installer" | grep -v grep | awk '{print $1;}')
 if [ "$IS_ROOT" = true ]; then
   security add-trusted-cert -d -r trustRoot -k /Library/Keychains/System.keychain $TMP
 else
@@ -56,17 +62,43 @@ else
   cd -
 fi
 
+ensureDirectory () {
+  if [ ! -e "$1" ]; then
+    echo "Creating folder $1 in $(pwd)" >> $DEBUG
+    mkdir $1
+    echo "Changing ownership to: $(stat -f %Su .).$(stat -f %Sg .)" >> $DEBUG
+    chgrp $(stat -f %Sg .) $1
+    chown $(stat -f %Su .) $1
+    chmod a+rx $1
+  fi
+  pushd $1
+}
+
+addCert () {
+  "$CERTUTIL" -A -n "Concord Consortium" -t "CT,C,C" -i "$TMP" -d . >> $DEBUG 2>&1
+  echo "Changing ownership to: $(stat -f %Su .).$(stat -f %Sg .)" >> $DEBUG
+  chgrp $(stat -f %Sg .) cert8.db
+  chown $(stat -f %Su .) cert8.db
+  chmod a+r cert8.db
+  chgrp $(stat -f %Sg .) secmod.db
+  chown $(stat -f %Su .) secmod.db
+  chmod a+r secmod.db
+  chgrp $(stat -f %Sg .) key3.db
+  chown $(stat -f %Su .) key3.db
+  chmod a+r key3.db
+}
+
 # install the cert into existing Firefox profiles
+CERTUTIL="$2/Contents/MacOS/certutilff"
 if [ "$IS_ROOT" = true ]; then
-  eval cd ~$ORIGINAL_USER
-  cd ..
+  cd /Users
   for home in `ls`; do
     pushd $home
     if [ -e "Library/Application Support/Firefox/Profiles" ]; then
       pushd "Library/Application Support/Firefox/Profiles"
       for i in `ls`; do
         pushd $i
-        "$DIR/certutilff" -A -n "Concord Consortium" -t "CT,C,C" -i "$TMP" -d .
+        addCert
         popd
       done
       popd
@@ -74,19 +106,13 @@ if [ "$IS_ROOT" = true ]; then
     popd
   done
 
-  # /Applications/Firefox.app/Contents/MacOS/browser/defaults/profile
+  # /Applications/Firefox.app/Contents/Resources/browser/defaults/profile
   if [ -e "/Applications/Firefox.app" ]; then
-    pushd "/Applications/Firefox.app/Contents/MacOS/"
-    if [ ! -e 'browser' ]; then
-      mkdir browser
-    fi
-    pushd "browser"
-
-    if [ ! -e 'defaults' ]; then mkdir defaults; fi
-    pushd "defaults"
-    if [ ! -e 'profile' ]; then mkdir profile; fi
-    pushd "profile"
-    "$DIR/certutilff" -A -n "Concord Consortium" -t "CT,C,C" -i "$TMP" -d .
+    pushd "/Applications/Firefox.app/Contents/Resources/"
+    ensureDirectory "browser"
+    ensureDirectory "defaults"
+    ensureDirectory "profile"
+    addCert
   fi
 else
   eval cd ~$ORIGINAL_USER
@@ -94,7 +120,7 @@ else
     pushd "Library/Application Support/Firefox/Profiles"
     for i in `ls`; do
       pushd $i
-      "$DIR/certutilff" -A -n "Concord Consortium" -t "CT,C,C" -i "$TMP" -d .
+      addCert
       popd
     done
     popd
@@ -102,19 +128,13 @@ else
 fi
 
 eval cd ~$ORIGINAL_USER
-# ~/Applications/Firefox.app/Contents/MacOS/browser/defaults/profile
+# ~/Applications/Firefox.app/Contents/Resources/browser/defaults/profile
 if [ -e "Applications/Firefox.app" ]; then
-  pushd "Applications/Firefox.app/Contents/MacOS/"
-  if [ ! -e 'browser' ]; then
-    mkdir browser
-  fi
-  pushd "browser"
-
-  if [ ! -e 'defaults' ]; then mkdir defaults; fi
-  pushd "defaults"
-  if [ ! -e 'profile' ]; then mkdir profile; fi
-  pushd "profile"
-  "$DIR/certutilff" -A -n "Concord Consortium" -t "CT,C,C" -i "$TMP" -d .
+  pushd "Applications/Firefox.app/Contents/Resources/"
+  ensureDirectory "browser"
+  ensureDirectory "defaults"
+  ensureDirectory "profile"
+  addCert
 fi
 
 rm $TMP
@@ -122,6 +142,7 @@ rm $TMP
 # Remove the old plugin, if it exists
 if [ "$IS_ROOT" = true ]; then
   if [ -e /Library/Internet\ Plug-Ins/npSensorConnectorDetection.plugin ]; then
+    echo "Removing existing global browser plugin" >> $DEBUG
     rm -rf /Library/Internet\ Plug-Ins/npSensorConnectorDetection.plugin
   fi
 fi
@@ -129,6 +150,7 @@ fi
 # for whatever reason, the tilde doesn't get expanded unless we eval it
 eval cd ~$ORIGINAL_USER
 if [ -e ./Library/Internet\ Plug-Ins/npSensorConnectorDetection.plugin ]; then
+  echo "Removing existing local user browser plugin" >> $DEBUG
   rm -rf ./Library/Internet\ Plug-Ins/npSensorConnectorDetection.plugin
 fi
 cd -

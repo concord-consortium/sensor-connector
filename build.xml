@@ -143,7 +143,11 @@
     <copy file="resources/cc-lightbulb.icns" todir="dist/app/SensorConnector.app/Contents/Resources" />
     <copy file="resources/Info.plist" todir="dist/app/SensorConnector.app/Contents" />
     <copy file="resources/run.sh" todir="dist/app/SensorConnector.app/Contents/MacOS" />
+    <copy todir="dist/app/SensorConnector.app/Contents/MacOS" flatten="true">
+      <fileset dir="resources/certutil-mac" />
+    </copy>
     <chmod perm="a+x" file="dist/app/SensorConnector.app/Contents/MacOS/run.sh" />
+    <chmod perm="a+x" file="dist/app/SensorConnector.app/Contents/MacOS/certutilff" />
     <copy todir="dist/app/SensorConnector.app/Contents/Java" flatten="true">
       <fileset dir="target">
         <include name="**/*.jar" />
@@ -205,7 +209,11 @@
     <exec executable="/usr/libexec/PlistBuddy" dir="dist/app">
       <arg line='-c "Add LSMultipleInstancesProhibited bool true" SensorConnector.app/Contents/Info.plist' />
     </exec>
+    <copy todir="dist/app/SensorConnector.app/Contents/MacOS" flatten="true">
+      <fileset dir="resources/certutil-mac" />
+    </copy>
     <chmod perm="a+x" file="dist/app/SensorConnector.app/Contents/MacOS/SensorConnector" />
+    <chmod perm="a+x" file="dist/app/SensorConnector.app/Contents/MacOS/certutilff" />
 
     <exec executable="rm" dir="dist/app/SensorConnector.app/Contents/PlugIns/jdk1.7.0_45.jdk/Contents/MacOS/">
       <arg value="libjli.dylib" />
