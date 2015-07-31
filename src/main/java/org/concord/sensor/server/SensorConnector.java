@@ -118,6 +118,46 @@ public class SensorConnector extends JFrame
 	static boolean isMac() {
 		return System.getProperty("os.name").toLowerCase().startsWith("mac");
 	}
+
+	public static String readDetailedVersionString() {
+		URL location = SensorConnector.class.getProtectionDomain().getCodeSource().getLocation();
+		String locStr = location != null ? location.toExternalForm() : "";
+		if (locStr.endsWith(".jar")) {
+			String version = locStr.substring(locStr.length()-17, locStr.length()-4);
+			String bitness = getJVMArch(true);
+			return version + " (" + bitness + ")";
+		} else {
+			return readVersionStringFromFile();
+		}
+	}
+
+	public static String readVersionString() {
+		// This is a little inefficient, but more DRY
+		String version = readDetailedVersionString();
+		version = version.replaceAll(" .*$", "");
+		return version;
+	}
+
+	private static String readVersionStringFromFile() {
+		InputStream versionStream = SensorConnector.class.getResourceAsStream("/VERSION");
+		Scanner s = new Scanner(versionStream);
+		String version = s.nextLine();
+		s.close();
+		return version;
+	}
+
+	// This only really works on Sun JVMs. But since SensorConnector is custom-packaged with its own JVM, it should be ok.
+	public static String getJVMArch(boolean appendBit) {
+		String bitness = "unknown";
+		String bitProp = System.getProperty("sun.arch.data.model");
+		if (bitProp != null && !bitProp.equals("unknown")) {
+			bitness = bitProp;
+			if (appendBit) {
+				bitness += "-bit";
+			}
+		}
+		return bitness;
+	}
 }
 
 class InfoFrame extends JFrame {
@@ -189,7 +229,7 @@ class InfoFrame extends JFrame {
 		JLabel unitsLabel = new JLabel("Units: ");
 		JLabel readingLabel = new JLabel("Current reading: ");
 		
-		final JLabel versionValue = new JLabel(readVersionString());
+		final JLabel versionValue = new JLabel(SensorConnector.readDetailedVersionString());
 		final JLabel statusValue = new JLabel(handler.getCurrentState());
 		final JLabel interfaceValue = new JLabel("");
 		final JLabel unitsValue = new JLabel("");
@@ -266,36 +306,6 @@ class InfoFrame extends JFrame {
 				}
 			}
 		}, 0, 500);
-	}
-
-	private String readVersionStringFromFile() {
-		InputStream versionStream = this.getClass().getResourceAsStream("/VERSION");
-		Scanner s = new Scanner(versionStream);
-		String version = s.nextLine();
-		s.close();
-		return version;
-	}
-
-	private String readVersionString() {
-		URL location = SensorConnector.class.getProtectionDomain().getCodeSource().getLocation();
-		String locStr = location != null ? location.toExternalForm() : "";
-		if (locStr.endsWith(".jar")) {
-			String version = locStr.substring(locStr.length()-17, locStr.length()-4);
-			String bitness = getJVMArch();
-			return version + " (" + bitness + ")";
-		} else {
-			return readVersionStringFromFile();
-		}
-	}
-
-	// This only really works on Sun JVMs. But since SensorConnector is custom-packaged with its own JVM, it should be ok.
-	private String getJVMArch() {
-		String bitness = "unknown";
-		String bitProp = System.getProperty("sun.arch.data.model");
-		if (bitProp != null && !bitProp.equals("unknown")) {
-			bitness = bitProp + "-bit";
-		}
-		return bitness;
 	}
 
 	private void setupTray() {

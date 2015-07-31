@@ -10,8 +10,6 @@ import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import net.minidev.json.JSONObject;
-
 import org.concord.sensor.ExperimentConfig;
 import org.concord.sensor.server.data.DataCollection;
 import org.concord.sensor.server.data.DataSink;
@@ -19,6 +17,8 @@ import org.eclipse.jetty.server.Request;
 import org.eclipse.jetty.server.handler.AbstractHandler;
 
 import com.continuent.tungsten.fsm.core.FiniteStateException;
+
+import net.minidev.json.JSONObject;
 
 public class SensorHandler extends AbstractHandler implements DataSink {
 	private SensorStateManager stateManager;
@@ -63,6 +63,7 @@ public class SensorHandler extends AbstractHandler implements DataSink {
 			json.put("currentInterface", stateManager.currentInterface());
 			appendColumnsInfo(json, getCurrentClient(request));
 			appendCollectionInfo(json, getCurrentClient(request));
+			appendVersionInfo(json);
 		} else if (target.equals("/connect")) {
 			stateManager.connect();
 		} else if (target.equals("/disconnect")) {
@@ -87,6 +88,19 @@ public class SensorHandler extends AbstractHandler implements DataSink {
 		json.put("currentState", stateManager.currentState().getName());
 		response.setStatus(HttpServletResponse.SC_OK);
 		response.getWriter().println(json.toJSONString());
+	}
+
+	private void appendVersionInfo(JSONObject json) {
+		JSONObject serverInfo = new JSONObject();
+		serverInfo.put("version", SensorConnector.readVersionString());
+		serverInfo.put("arch", SensorConnector.getJVMArch(false));
+		json.put("server", serverInfo);
+
+		JSONObject osInfo = new JSONObject();
+		osInfo.put("name", System.getProperty("os.name"));
+		osInfo.put("version", System.getProperty("os.version"));
+		json.put("os", osInfo);
+		
 	}
 
 	private String getCurrentClient(HttpServletRequest request) {

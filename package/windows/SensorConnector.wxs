@@ -2,7 +2,7 @@
 <Wix xmlns="http://schemas.microsoft.com/wix/2006/wi"
      xmlns:util="http://schemas.microsoft.com/wix/UtilExtension">
     <Product Id="96a7a5c2-df77-411b-ba25-842d7fc9f7e0" Name="SensorConnector"
-             Language="1033" Codepage="1252" Version="1.0.0.14"
+             Language="1033" Codepage="1252" Version="1.0.0.15"
              Manufacturer="Concord Consortium"
              UpgradeCode="b5f2e77a-9a6a-46ca-be60-c9e181b15c63">
         <Package Description="Sensor Connector Application" Comments="None"
