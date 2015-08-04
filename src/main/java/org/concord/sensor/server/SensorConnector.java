@@ -16,7 +16,6 @@ import java.awt.event.ActionListener;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.io.InputStream;
-import java.net.BindException;
 import java.net.URL;
 import java.security.Security;
 import java.util.Arrays;
@@ -57,7 +56,6 @@ public class SensorConnector extends JFrame
 		}
 
     	final SensorHandler handler = new SensorHandler();
-    	handler.init();
     	
     	server = new Server();
 
@@ -83,7 +81,7 @@ public class SensorConnector extends JFrame
 	        try {
 	        	server.start();
 	        	break;
-	        } catch (BindException e) {
+	        } catch (Exception e) {
 	        	System.err.println("Ports 11180,11181 already in use on " + host);
 	        }
     	}
@@ -94,6 +92,8 @@ public class SensorConnector extends JFrame
         	JOptionPane.showMessageDialog(null, "The Sensor Connector appears to already be running.", "Sensor Connector", JOptionPane.ERROR_MESSAGE);
         	System.exit(1);
     	}
+
+    	handler.init();
         
         InfoFrame infoFrame = new InfoFrame(handler);
         
