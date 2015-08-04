@@ -155,4 +155,10 @@ if [ -e ./Library/Internet\ Plug-Ins/npSensorConnectorDetection.plugin ]; then
 fi
 cd -
 
+# ensure only the most recent sensor connector jar is in the path
+cd $2/Contents/Java
+ls -t sensor-connector-* | tail -n +2 | xargs rm
+cd -
+
+
 exit 0
