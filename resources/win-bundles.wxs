@@ -1,7 +1,8 @@
 <?xml version="1.0"?>
 <Wix xmlns="http://schemas.microsoft.com/wix/2006/wi" xmlns:util="http://schemas.microsoft.com/wix/UtilExtension" xmlns:bal="http://schemas.microsoft.com/wix/BalExtension">
+  <!-- Make sure the version here matches the new version in the MSI definition -->
   <Bundle
-      Version="1.0.0.15"
+      Version="1.0.1.0"
       AboutUrl="http://sensorconnector.concord.org/"
       DisableModify="yes"
       Manufacturer="Concord Consortium, Inc."
