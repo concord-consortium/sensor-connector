@@ -24,10 +24,12 @@
       <MsiPackage
         ForcePerMachine="yes"
         Permanent="yes"
+        Visible="yes"
         SourceFile="resources\drivers\VernierInterfaceDrivers_100.msi" />
       <MsiPackage
         ForcePerMachine="yes"
         Permanent="yes"
+        Visible="yes"
         SourceFile="resources\drivers\PASCOUSBDrivers.msi" />
     </Chain>
   </Bundle>
