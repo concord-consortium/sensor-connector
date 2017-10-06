@@ -1,7 +1,104 @@
-# Sensor Connector
+# SensorConnector
 
-## Pre-requisites:
-### All platforms
+SensorConnector is a desktop application which connects to sensors made by Vernier and Pasco and serves up the collected data so that it is accessible to browser-based applications written in JavaScript. It is written in Java and runs natively on Mac OS and Windows machines. See http://sensorconnector.concord.org/ for more information and to download the application.
+
+Note that currently SensorConnector can only connect to one interface at a time, e.g. one LabQuest or one Go! device. Multiple sensors are supported for interfaces such as the LabQuest that support multiple sensors.
+
+## Usage
+
+The SensorConnector application responds to http/https requests to the following addresses/ports:
+- http://127.0.0.1:11180
+- https://127.0.0.1:11181
+
+The server responds to 'GET' requests at the following API endpoints. Where responses are provided, they are JSON-formatted UTF8-encoded.
+
+### / or /status : IStatusReceivedTuple
+
+Response is the current status of the SensorConnector, including the interface connected (if any), the sensors that are connected, etc. The response is a two-element array in which the sensor configuration is in `response[1]`. The response has this form as a TypeScript definition:
+```
+interface ISensorConfigColumnInfo {
+  id:string;
+  setID:string;
+  position:number;
+  name:string;
+  units:string;
+  liveValue:string;
+  liveValueTimeStamp:Date;
+  valueCount:number;
+  valuesTimeStamp:Date;
+  data?:number[];
+}
+
+interface ISensorConfigSet {
+  name:string;
+  colIDs:number[];
+}
+
+interface ISensorConfig {
+  collection:{ canControl:boolean; isCollecting:boolean; };
+  columnListTimeStamp:Date;
+  columns:{ [key:string]: ISensorConfigColumnInfo; };
+  currentInterface:string;
+  currentState:string;
+  os:{ name:string; version:string; };
+  requestTimeStamp:Date;
+  server:{ arch:string; version:string; };
+  sessionDesc:string;
+  sessionID:string;
+  sets:{ [key:string]: ISensorConfigSet; };
+  setID?:string;
+}
+
+interface IMachinaAction {
+  inputType:string;
+  delegated:boolean;
+  ticket:any;
+}
+
+interface IStatusReceivedTuple
+  extends Array<IMachinaAction|ISensorConfig>
+            {0:IMachinaAction, 1:ISensorConfig}
+```
+
+### /connect
+
+Scan for available devices to connect to and attempt to connect to the first one found. Clients may not need to call this method as the SensorConnector application attempts to connect automatically during application initialization. The response is the SensorConnector state at the time the request was processed.
+
+### /disconnect
+
+Disconnect from any connected device. Clients may not need to call this method as the SensorConnector application attempts to disconnect automatically on application termination. The response is the SensorConnector state at the time the request was processed.
+
+### /control/start
+
+Start collecting data. The response is the SensorConnector state at the time the request was processed, e.g. `{"currentState":"CONNECTED:POLLING"}`.
+
+### /control/stop
+
+Stop collecting data. The response is the SensorConnector state at the time the request was processed, e.g. `{"currentState":"CONNECTED:COLLECTING"}`.
+
+### /columns/{columnID} : IColumnDataTuple
+
+Responds with collected data for the specified column. The format of the response is a four-element array in which:
+- `response[1]`: the column ID
+- `response[2]`: the column data values
+- `response[3]`: the timestamp of the data values
+
+The column data values in `response[2]` are time values for column IDs that end in '0', and sensor data values for all other column IDs. The response has this form as a TypeScript definition:
+```
+interface IMachinaAction {
+  inputType:string;
+  delegated:boolean;
+  ticket:any;
+}
+
+interface IColumnDataTuple
+  extends Array<IMachinaAction|string|number[]|Date>
+            {0:IMachinaAction, 1:string, 2:number[], 3:Date}
+```
+
+## Development
+### Pre-requisites:
+#### All platforms
 
 - [**Ant**](http://ant.apache.org/) (any recent version)
 - [**Maven**](http://maven.apache.org/) (any recent version)
@@ -96,5 +193,5 @@ After installing the pre-requisites, fire up your terminal.
 
 ## Updating the server certificate
 
-- Generate the new certificate keystore using the tools in the (ssl-ca)[https://github.com/concord-consortium/ssl-ca] project.
+- Generate the new certificate keystore using the tools in the [ssl-ca](https://github.com/concord-consortium/ssl-ca) project.
 - Replace the existing keystore file: `src/main/resources/server.jks`
