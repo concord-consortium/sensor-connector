@@ -23,14 +23,6 @@
         <enabled>false</enabled>
       </snapshots>
     </repository>
-    <repository>
-      <id>cc</id>
-      <name>CC Repo</name>
-      <url>http://source.concord.org/nexus/content/groups/public</url>
-      <snapshots>
-        <enabled>true</enabled>
-      </snapshots>
-    </repository>
   </repositories>
 
   <build>
@@ -90,9 +82,9 @@
       <version>8.1.14.v20131031</version>
     </dependency>
     <dependency>
-      <groupId>org.concord.external</groupId>
+      <groupId>com.continuent.tungsten</groupId>
       <artifactId>tungsten-fsm</artifactId>
-      <version>1.0</version>
+      <version>1.1</version>
     </dependency>
     <dependency>
 	  <groupId>net.minidev</groupId>
@@ -107,7 +99,7 @@
     <dependency>
       <groupId>log4j</groupId>
       <artifactId>log4j</artifactId>
-      <version>1.2.15</version>
+      <version>1.2.17</version>
     </dependency>
     <dependency>
       <groupId>junit</groupId>

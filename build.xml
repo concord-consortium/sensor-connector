@@ -173,7 +173,14 @@
         <isset property="jre" />
       </not>
     </condition>
-    <echo message="JRE: ${jre}\nSet JRE_HOME to override!" />
+    <echo message="JRE: ${jre} - Set JRE_HOME to override!" />
+    <!-- Run script to set JRE_NAME from JRE_HOME -->
+    <exec executable="/bin/bash">
+      <arg line="-c 'source ./script/jre-name.sh'" />
+    </exec>
+    <condition property="jre_name" value="${env.JRE_NAME}">
+      <isset property="env.JRE_NAME" />
+    </condition>
     <copy file="resources/bg.png" todir="dist/app/.background" />
     <bundleapp outputdirectory="dist/app"
                name="SensorConnector" displayname="Sensor Connector"
@@ -215,11 +222,11 @@
     <chmod perm="a+x" file="dist/app/SensorConnector.app/Contents/MacOS/SensorConnector" />
     <chmod perm="a+x" file="dist/app/SensorConnector.app/Contents/MacOS/certutilff" />
 
-    <exec executable="rm" dir="dist/app/SensorConnector.app/Contents/PlugIns/jdk1.7.0_45.jdk/Contents/MacOS/">
+    <exec executable="rm" dir="dist/app/SensorConnector.app/Contents/PlugIns/${jre_name}/Contents/MacOS/">
       <arg value="libjli.dylib" />
     </exec>
-    <copy file="dist/app/SensorConnector.app/Contents/PlugIns/jdk1.7.0_45.jdk/Contents/Home/jre/lib/jli/libjli.dylib"
-         todir="dist/app/SensorConnector.app/Contents/PlugIns/jdk1.7.0_45.jdk/Contents/MacOS/" />
+    <copy file="dist/app/SensorConnector.app/Contents/PlugIns/${jre_name}/Contents/Home/jre/lib/jli/libjli.dylib"
+         todir="dist/app/SensorConnector.app/Contents/PlugIns/${jre_name}/Contents/MacOS/" />
   </target>
 
   <target name="mac-sign">
@@ -255,6 +262,5 @@
     </exec>
     <move file="dist/SensorConnector.dmg" tofile="dist/SensorConnector-x64-${DSTAMP}-${TSTAMP}.dmg" />
   </target>
-
 
 </project>
