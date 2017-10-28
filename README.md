@@ -121,6 +121,37 @@ For more info on signing apps and packages on Windows, these step-by-step instru
 - the last [**Java 6 release**](http://support.apple.com/kb/DL1572?viewlocale=en_US) is the only available 32-bit JDK
 - PackageMaker is needed to build the installation package. Log into developer.apple.com with your free dev account. Then go here: https://developer.apple.com/downloads/index.action and search for PackageMaker. It should be listed under Auxillary Tools for XCode. Make sure to download the latest one.
 
+## October 2017 Update
+
+Previously, building the SensorConnector application required the use of a Concord Consortium-hosted Maven repository which provided access to various Concord Consortium-developed JARs as well as some third-party JARs. Since Concord Consortium no longer runs its own Maven repository, the required JARs must be installed into the local Maven repository to build the SensorConnector application.
+
+### Install SensorProjects
+
+[SensorProjects](https://github.com/concord-consortium/sensor-projects) is a separate Concord Consortium project which builds JARs that are used by the SensorConnector application. To build and install the SensorProjects JARs into the local Maven repository, cd to an appropriate directory (e.g. the parent of the sensor-connector directory, so that sensor-projects will be next to sensor-connector) and run:
+```
+git clone https://github.com/concord-consortium/sensor-projects.git
+cd sensor-projects
+mvn install
+``` 
+
+### Install Tungsten-FSM
+
+The SensorConnector application also requires a third-party finite state machine library named `Tungsten-FSM`. This is a component of a larger open source project call the [Tungsten Replicator](https://sourceforge.net/projects/tungsten-replicator). As I write this, the shipping version of SensorConnector was built with version 1.0 of Tungsten-FSM, which was available from the Concord Consortium-hosted Maven repository. I was able to track down version 1.1 of Tungsten-FSM, which is now included in the `lib` folder and which appears to have the same API, but this combination will require further testing.
+
+To build and install the local Tungsten-FSM version 1.1, run
+```
+./script/install-local.sh
+```
+### LSOpenURLsWithRole() failed ... with error -10810
+
+With these changes, the 32-bit SensorConnector application builds and launches successfully. The 64-bit SensorConnector build also completes successfully, but attempting to launch the application results in the following error message:
+```
+LSOpenURLsWithRole() failed for the application </path/to/application> with error -10810.
+```
+From https://www.osstatus.com, `-10810` corresponds to `kLSUnknownErr`, which is not particularly helpful.
+
+This [blog post](http://dclunie.blogspot.com/2014/10/keeping-up-with-mac-java-bundling-into.html) suggests that one possibility is that the packaging requirements for Java applications has changed. In fact, while Oracle's [Java 7 instructions](http://docs.oracle.com/javase/7/docs/technotes/guides/jweb/packagingAppsForMac.html) for packaging applications refers to `AppBuilder`, the [Java 8 instructions](https://docs.oracle.com/javase/8/docs/technotes/guides/deploy/self-contained-packaging.html) refer to `fx:deploy` instead.
+
 ## Building the installer
 
 ### Windows
@@ -166,7 +197,13 @@ After installing the pre-requisites, fire up your terminal.
 `ant mac-package`
 
 - The **application** will be created as `dist/app/SensorConnector.app`
-- The **.dmg** with the application will be created as `dist/SensorConnector-{TIMESTAMP}-1.dmg`
+- The **.dmg** with the application will be created as `dist/SensorConnector-{TIMESTAMP}.dmg`
+
+To build the application without packaging the .dmg, run in the console:
+
+` ant mac-stage`
+
+- The **application** will be created as `dist/app/SensorConnector.app`
 
 ### OS X (64-bit)
 
@@ -186,10 +223,23 @@ After installing the pre-requisites, fire up your terminal.
 
 - From the sensor-connector root, run in the console:
 
-`ant mac-package`
+`ant mac-package-x64`
 
 - The **application** will be created as `dist/app/SensorConnector.app`
-- The **.dmg** with the application will be created as `dist/SensorConnector-{TIMESTAMP}-1.dmg`
+- The **.dmg** with the application will be created as `dist/SensorConnector-x64-{TIMESTAMP}.dmg`
+
+To build the application without packaging the .dmg, run in the console:
+
+` ant mac-stage-x64`
+
+- The **application** will be created as `dist/app/SensorConnector.app`
+
+### mac-build.sh script
+
+The `mac-build.sh` script will build the 32-bit and 64-bit packages, setting the `JAVA_HOME` and `JRE_HOME` environment variables appropriately for each build, and copy the resulting .dmg files into the project directory. To run it:
+```
+./script/mac-build.sh
+```
 
 ## Updating the server certificate
 
