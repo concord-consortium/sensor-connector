@@ -87,15 +87,15 @@
       <version>1.2</version>
     </dependency>
     <dependency>
-	  <groupId>net.minidev</groupId>
-	  <artifactId>json-smart</artifactId>
-	  <version>2.0-RC3</version>
-	</dependency>
-	<dependency>
-	  <groupId>org.usb4java</groupId>
-	  <artifactId>usb4java</artifactId>
-	  <version>1.2.0</version>
-	</dependency>
+      <groupId>net.minidev</groupId>
+      <artifactId>json-smart</artifactId>
+      <version>2.0-RC3</version>
+    </dependency>
+    <dependency>
+      <groupId>org.usb4java</groupId>
+      <artifactId>usb4java</artifactId>
+      <version>1.2.0</version>
+    </dependency>
     <dependency>
       <groupId>log4j</groupId>
       <artifactId>log4j</artifactId>
@@ -108,39 +108,44 @@
       <scope>test</scope>
     </dependency>
     <dependency>
-    	<groupId>org.concord.sensor</groupId>
-    	<artifactId>goio-jna</artifactId>
-    	<version>1.0-SNAPSHOT</version>
+      <groupId>org.concord.sensor</groupId>
+      <artifactId>goio-jna</artifactId>
+      <version>1.0-SNAPSHOT</version>
     </dependency>
     <dependency>
-    	<groupId>org.concord.sensor</groupId>
-    	<artifactId>sensor-vernier</artifactId>
-    	<version>1.0-SNAPSHOT</version>
+      <groupId>org.concord.sensor</groupId>
+      <artifactId>labpro-usb-jna</artifactId>
+      <version>1.0-SNAPSHOT</version>
     </dependency>
     <dependency>
-    	<groupId>org.concord.sensor</groupId>
-    	<artifactId>labquest-jna</artifactId>
-    	<version>1.0-SNAPSHOT</version>
+      <groupId>org.concord.sensor</groupId>
+      <artifactId>labquest-jna</artifactId>
+      <version>1.0-SNAPSHOT</version>
     </dependency>
     <dependency>
-    	<groupId>org.concord.sensor</groupId>
-    	<artifactId>pasco-jna</artifactId>
-    	<version>1.0-SNAPSHOT</version>
+      <groupId>org.concord.sensor</groupId>
+      <artifactId>sensor-vernier</artifactId>
+      <version>1.0-SNAPSHOT</version>
     </dependency>
     <dependency>
-    	<groupId>org.concord.sensor</groupId>
-    	<artifactId>sensor-pasco</artifactId>
-    	<version>1.0-SNAPSHOT</version>
+      <groupId>org.concord.sensor</groupId>
+      <artifactId>pasco-jna</artifactId>
+      <version>1.0-SNAPSHOT</version>
     </dependency>
     <dependency>
-		<groupId>org.bouncycastle</groupId>
-		<artifactId>bcprov-jdk16</artifactId>
-		<version>1.46</version>
+      <groupId>org.concord.sensor</groupId>
+      <artifactId>sensor-pasco</artifactId>
+      <version>1.0-SNAPSHOT</version>
     </dependency>
     <dependency>
-		<groupId>org.bouncycastle</groupId>
-		<artifactId>bcprov-ext-jdk16</artifactId>
-		<version>1.46</version>
+      <groupId>org.bouncycastle</groupId>
+      <artifactId>bcprov-jdk16</artifactId>
+      <version>1.46</version>
+    </dependency>
+    <dependency>
+      <groupId>org.bouncycastle</groupId>
+      <artifactId>bcprov-ext-jdk16</artifactId>
+      <version>1.46</version>
     </dependency>
   </dependencies>
 </project>
