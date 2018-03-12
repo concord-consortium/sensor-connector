@@ -84,7 +84,7 @@
     <dependency>
       <groupId>com.continuent.tungsten</groupId>
       <artifactId>tungsten-fsm</artifactId>
-      <version>1.1</version>
+      <version>1.2</version>
     </dependency>
     <dependency>
 	  <groupId>net.minidev</groupId>
