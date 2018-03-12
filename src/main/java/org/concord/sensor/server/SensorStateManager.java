@@ -271,7 +271,7 @@ public class SensorStateManager {
 						}
 
 						logger.debug("Creating device: " + Thread.currentThread().getName());
-						device = deviceFactory.createDevice(new DeviceConfigImpl(currentInterfaceType, null));
+						device = deviceFactory.createDevice(new DeviceConfigImpl(currentInterfaceType, "usb"));
 						
 						// Check if we're attached
 						logger.debug("Checking attached: " + Thread.currentThread().getName());
