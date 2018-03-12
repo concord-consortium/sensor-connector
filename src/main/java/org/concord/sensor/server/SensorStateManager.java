@@ -646,7 +646,7 @@ public class SensorStateManager {
 				
 				int numCollected = 0;
 				while (numErrors < MAX_READ_ERRORS && numCollected < 1) {
-					logger.debug("Trying to read data from the device...");
+					logger.debug(String.format("Attempt %d to read data from the device...", numErrors + 1));
 					try {
 						final int numSamples = device.read(buffer, 0, numSensors, null);
 						if (numSamples > 0) {
@@ -654,7 +654,8 @@ public class SensorStateManager {
 							synchronized (data) {
 								System.arraycopy(buffer, 0, data, 0, numSensors);
 							}
-							logger.debug("Successfully captured data!");
+							logger.debug(String.format("Successfully read %d samples from the device after %d errors!",
+										numSamples, numErrors));
 							numCollected++;
 							numErrors = 0;
 						} else {
