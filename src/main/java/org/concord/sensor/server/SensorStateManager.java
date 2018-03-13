@@ -326,7 +326,12 @@ public class SensorStateManager {
 					@Override
 					public void run() {
 						try {
-							readSingleValue();
+							if ((device != null) && device.supportsChannelPolling()) {
+								pollChannelValues();
+							}
+							else {
+								readSingleValue();
+							}
 						} catch (Exception e) {
 							errorCount++;
 							logger.error("Failed to read data from the device!", e);
@@ -564,6 +569,28 @@ public class SensorStateManager {
 			logger.debug("DONE getting device config: " + Thread.currentThread().getName());
 		}
 		return reportedConfig;
+	}
+
+	void pollChannelValues() {
+		Runnable r = new Runnable() {
+			public void run() {
+				ExperimentConfig expConfig = getDeviceConfig();
+				SensorConfig[] sensors = expConfig.getSensorConfigs();
+				int sensorCount = sensors != null ? sensors.length : 0;
+				float[] channelValues = new float[sensorCount];
+				int valueCount = device.pollChannelValues(expConfig, channelValues);
+				if (valueCount > 0) {
+					datasink.setLastPolledData(expConfig, channelValues);
+				}
+				else if (valueCount < 0) {
+					throw new RuntimeException("Error polling channel values");
+				}
+			}
+		};
+		if (! executeAndWait(r, 10)) {
+			// exception trying to read channel values
+			throw new RuntimeException("Error polling channel values.");
+		}
 	}
 
 	private int numErrors = 0;
