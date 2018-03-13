@@ -449,13 +449,14 @@ public class SensorStateManager {
 							interval = 100;
 						}
 						long adjustedInterval = interval;
+						long initialDelay = actualConfig.getInitialReadDelay() + adjustedInterval;
 						if (device instanceof PascoUsbSensorDevice) {
 							zeroSamplesIsAnError = false;
 						}
 						boolean deviceIsRunning = device.start();
 						if(deviceIsRunning) {
 							System.out.println("started device");
-							collectionTask = executor.scheduleAtFixedRate(r, adjustedInterval, adjustedInterval, TimeUnit.MILLISECONDS);
+							collectionTask = executor.scheduleAtFixedRate(r, initialDelay, adjustedInterval, TimeUnit.MILLISECONDS);
 						} else {
 							// we should send a notification here that something went wrong
 							System.err.println("error starting the device");
