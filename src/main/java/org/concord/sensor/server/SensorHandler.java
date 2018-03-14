@@ -198,22 +198,22 @@ public class SensorHandler extends AbstractHandler implements DataSink {
 	public void setLastPolledData(ExperimentConfig config, float[] data) {
 		// If the sensors have changed from the current collection, start a new collection
 		// and discard the current one if no data has been collected
-		if (collections.size() == 0) {
-			startNewCollection(config);
-		} else {
-			DataCollection c = collections.get(collections.size()-1);
-			if (!c.isPristine(config) && c.getNumberOfSamples() == 0) {
-				// sensors changed, but no data collected
-				// collections.remove(c);
-				c.updateSensors(config);
-			}
-			c.setLastPolledData(data);
+		int collectionCount = collections.size();
+		DataCollection c = collectionCount > 0 ? collections.get(collections.size()-1) : null;
+		if ((c != null) && !c.isPristine(config) && (c.getNumberOfSamples() == 0)) {
+			// sensors changed, but no data collected
+			c.updateSensors(config);
 		}
+		else {
+			// will only start a new collection if sensors have changed
+			startNewCollection(config);
+		}
+		c.setLastPolledData(data);
 	}
 
 	@Override
 	public float[] getLastPolledData() {
-		if (collections.size() > 0) {
+		if (stateManager.hasCurrentInterface() && (collections.size() > 0)) {
 			return collections.get(collections.size()-1).getLastPolledData();
 		} else {
 			return new float[] {};
@@ -251,7 +251,7 @@ public class SensorHandler extends AbstractHandler implements DataSink {
 	}
 
 	public String[] getUnits() {
-		if (collections.size() > 0) {
+		if (stateManager.hasCurrentInterface() && (collections.size() > 0)) {
 			DataCollection dataCollection = collections.get(collections.size()-1);
 			return dataCollection.getUnits();
 		} else {

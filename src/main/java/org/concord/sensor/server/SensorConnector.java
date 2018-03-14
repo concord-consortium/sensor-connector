@@ -291,11 +291,15 @@ class InfoFrame extends JFrame {
 					statusValue.setText(handler.getCurrentState());
 					
 					String[] units = handler.getUnits();
-					String unit = join(Arrays.copyOfRange(units, 1, units.length)); // strip off the first value, which is the time column
+					String unit = units.length > 1
+													? join(Arrays.copyOfRange(units, 1, units.length))	// strip off the first value, which is the time column
+													: "";
 					unitsValue.setText(unit);
 					
 					float[] lastPolledData = handler.getLastPolledData();
-					String reading = join(Arrays.copyOfRange(lastPolledData, 1, lastPolledData.length)); // strip off the first value, which is the time column
+					String reading = lastPolledData.length > 1
+														? join(Arrays.copyOfRange(lastPolledData, 1, lastPolledData.length))	// strip off the first value, which is the time column
+														: "";
 					readingValue.setText(reading);
 					
 					pack();

@@ -54,6 +54,7 @@ public class SensorStateManager {
 	private final static Logger logger = LogManager.getLogger(SensorStateManager.class.getName());
 	
 	private static final int MAX_READ_ERRORS = 7;
+	private static final int NULL_INTERFACE_TYPE = -1;
 
 	private JavaDeviceFactory deviceFactory;
 	private SensorDevice device;
@@ -63,7 +64,7 @@ public class SensorStateManager {
 
 	private ExperimentConfig reportedConfig = null;
 	private long reportedConfigLoadedAt = 0;
-	private int currentInterfaceType = DeviceID.VERNIER_GO_LINK_JNA;
+	private int currentInterfaceType = NULL_INTERFACE_TYPE;
 	private boolean zeroSamplesIsAnError = true;
 	
 	private DataSink datasink;
@@ -126,9 +127,13 @@ public class SensorStateManager {
 	public State currentState() {
 		return stateMachine.getState();
 	}
+
+	public boolean hasCurrentInterface() {
+		return currentInterfaceType != NULL_INTERFACE_TYPE;
+	}
 	
 	public String currentInterface() {
-		if (currentInterfaceType == -1) {
+		if (currentInterfaceType == NULL_INTERFACE_TYPE) {
 			return "None Found";
 		}
 		return DeviceFinder.getDeviceName(currentInterfaceType);
@@ -253,7 +258,7 @@ public class SensorStateManager {
 				Runnable r = new Runnable() {
 					public void run() {
 						// Scan to see which devices are connected, and then connect with that device type
-						currentInterfaceType = -1;
+						currentInterfaceType = NULL_INTERFACE_TYPE;
 						try {
 							int[] types = DeviceFinder.getAttachedDeviceTypes();
 							if (types.length > 0) {
@@ -265,7 +270,7 @@ public class SensorStateManager {
 							logger.error("Failed to enumerate USB devices!", e);
 						}
 						
-						if (currentInterfaceType == -1) {
+						if (currentInterfaceType == NULL_INTERFACE_TYPE) {
 							// No devices found. Fail transition to go back to disconnected.
 							throw new RuntimeException("No devices found!");
 						}
@@ -309,6 +314,7 @@ public class SensorStateManager {
 						public void run() {
 							deviceFactory.destroyDevice(device);
 							device = null;
+							currentInterfaceType = NULL_INTERFACE_TYPE;
 						}
 					};
 					executeAndWait(r);
@@ -335,7 +341,7 @@ public class SensorStateManager {
 						} catch (Exception e) {
 							errorCount++;
 							logger.error("Failed to read data from the device!", e);
-							if (errorCount > 5) {
+							if (errorCount > 2) {
 								try {
 									dispatcher.put(new DisconnectEvent());
 								} catch (InterruptedException e1) {
@@ -502,6 +508,7 @@ public class SensorStateManager {
 						if (device != null) {
 							deviceFactory.destroyDevice(device);
 							device = null;
+							currentInterfaceType = NULL_INTERFACE_TYPE;
 						}
 					}
 				};
@@ -576,11 +583,14 @@ public class SensorStateManager {
 		Runnable r = new Runnable() {
 			public void run() {
 				ExperimentConfig expConfig = getDeviceConfig();
+				if (expConfig == null) {
+					throw new RuntimeException("Error polling channel values");
+				}
 				SensorConfig[] sensors = expConfig.getSensorConfigs();
 				int sensorCount = sensors != null ? sensors.length : 0;
 				float[] channelValues = new float[sensorCount];
 				int valueCount = device.pollChannelValues(expConfig, channelValues);
-				if (valueCount > 0) {
+				if (valueCount >= 0) {
 					datasink.setLastPolledData(expConfig, channelValues);
 				}
 				else if (valueCount < 0) {
