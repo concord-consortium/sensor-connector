@@ -328,6 +328,11 @@ public class SensorStateManager {
 				datasink.startNewCollection(getDeviceConfig());
 				
 				Runnable r2 = new Runnable() {
+					// This is a balance between how quickly we recognize that a device
+					// has been disconnected and how robust we are to the possibility of
+					// occasional device errors. It was recently adjusted from 5 to 2
+					// to make detection of device disconnect more responsive.
+					private int ALLOWED_ERRORS_BEFORE_DISCONNECT = 2;
 					private int errorCount = 0;
 					@Override
 					public void run() {
@@ -341,7 +346,7 @@ public class SensorStateManager {
 						} catch (Exception e) {
 							errorCount++;
 							logger.error("Failed to read data from the device!", e);
-							if (errorCount > 2) {
+							if (errorCount > ALLOWED_ERRORS_BEFORE_DISCONNECT) {
 								try {
 									dispatcher.put(new DisconnectEvent());
 								} catch (InterruptedException e1) {

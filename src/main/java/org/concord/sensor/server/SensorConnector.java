@@ -292,14 +292,14 @@ class InfoFrame extends JFrame {
 					
 					String[] units = handler.getUnits();
 					String unit = units.length > 1
-													? join(Arrays.copyOfRange(units, 1, units.length))	// strip off the first value, which is the time column
-													: "";
+									? join(Arrays.copyOfRange(units, 1, units.length))	// strip off the first value, which is the time column
+									: "";
 					unitsValue.setText(unit);
 					
 					float[] lastPolledData = handler.getLastPolledData();
 					String reading = lastPolledData.length > 1
-														? join(Arrays.copyOfRange(lastPolledData, 1, lastPolledData.length))	// strip off the first value, which is the time column
-														: "";
+										? join(Arrays.copyOfRange(lastPolledData, 1, lastPolledData.length))	// strip off the first value, which is the time column
+										: "";
 					readingValue.setText(reading);
 					
 					pack();
