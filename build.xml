@@ -132,7 +132,7 @@
         <isset property="jre" />
       </not>
     </condition>
-    <echo message="JRE: ${jre}\nSet JRE_HOME to override!" />
+    <echo message="JRE: ${jre}${line.separator}Set JRE_HOME to override!" />
     <copy file="resources/bg.png" todir="dist/app/.background" />
     <mkdir dir="dist/app/SensorConnector.app" />
     <mkdir dir="dist/app/SensorConnector.app/Contents" />

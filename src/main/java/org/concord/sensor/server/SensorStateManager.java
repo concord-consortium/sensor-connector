@@ -54,6 +54,7 @@ public class SensorStateManager {
 	private final static Logger logger = LogManager.getLogger(SensorStateManager.class.getName());
 	
 	private static final int MAX_READ_ERRORS = 7;
+	private static final int NULL_INTERFACE_TYPE = -1;
 
 	private JavaDeviceFactory deviceFactory;
 	private SensorDevice device;
@@ -63,7 +64,7 @@ public class SensorStateManager {
 
 	private ExperimentConfig reportedConfig = null;
 	private long reportedConfigLoadedAt = 0;
-	private int currentInterfaceType = DeviceID.VERNIER_GO_LINK_JNA;
+	private int currentInterfaceType = NULL_INTERFACE_TYPE;
 	private boolean zeroSamplesIsAnError = true;
 	
 	private DataSink datasink;
@@ -126,9 +127,13 @@ public class SensorStateManager {
 	public State currentState() {
 		return stateMachine.getState();
 	}
+
+	public boolean hasCurrentInterface() {
+		return currentInterfaceType != NULL_INTERFACE_TYPE;
+	}
 	
 	public String currentInterface() {
-		if (currentInterfaceType == -1) {
+		if (currentInterfaceType == NULL_INTERFACE_TYPE) {
 			return "None Found";
 		}
 		return DeviceFinder.getDeviceName(currentInterfaceType);
@@ -253,7 +258,7 @@ public class SensorStateManager {
 				Runnable r = new Runnable() {
 					public void run() {
 						// Scan to see which devices are connected, and then connect with that device type
-						currentInterfaceType = -1;
+						currentInterfaceType = NULL_INTERFACE_TYPE;
 						try {
 							int[] types = DeviceFinder.getAttachedDeviceTypes();
 							if (types.length > 0) {
@@ -265,13 +270,13 @@ public class SensorStateManager {
 							logger.error("Failed to enumerate USB devices!", e);
 						}
 						
-						if (currentInterfaceType == -1) {
+						if (currentInterfaceType == NULL_INTERFACE_TYPE) {
 							// No devices found. Fail transition to go back to disconnected.
 							throw new RuntimeException("No devices found!");
 						}
 
 						logger.debug("Creating device: " + Thread.currentThread().getName());
-						device = deviceFactory.createDevice(new DeviceConfigImpl(currentInterfaceType, null));
+						device = deviceFactory.createDevice(new DeviceConfigImpl(currentInterfaceType, "usb"));
 						
 						// Check if we're attached
 						logger.debug("Checking attached: " + Thread.currentThread().getName());
@@ -309,6 +314,7 @@ public class SensorStateManager {
 						public void run() {
 							deviceFactory.destroyDevice(device);
 							device = null;
+							currentInterfaceType = NULL_INTERFACE_TYPE;
 						}
 					};
 					executeAndWait(r);
@@ -322,15 +328,25 @@ public class SensorStateManager {
 				datasink.startNewCollection(getDeviceConfig());
 				
 				Runnable r2 = new Runnable() {
+					// This is a balance between how quickly we recognize that a device
+					// has been disconnected and how robust we are to the possibility of
+					// occasional device errors. It was recently adjusted from 5 to 2
+					// to make detection of device disconnect more responsive.
+					private int ALLOWED_ERRORS_BEFORE_DISCONNECT = 2;
 					private int errorCount = 0;
 					@Override
 					public void run() {
 						try {
-							readSingleValue();
+							if ((device != null) && device.supportsChannelPolling()) {
+								pollChannelValues();
+							}
+							else {
+								readSingleValue();
+							}
 						} catch (Exception e) {
 							errorCount++;
 							logger.error("Failed to read data from the device!", e);
-							if (errorCount > 5) {
+							if (errorCount > ALLOWED_ERRORS_BEFORE_DISCONNECT) {
 								try {
 									dispatcher.put(new DisconnectEvent());
 								} catch (InterruptedException e1) {
@@ -444,13 +460,14 @@ public class SensorStateManager {
 							interval = 100;
 						}
 						long adjustedInterval = interval;
+						long initialDelay = actualConfig.getInitialReadDelay() + adjustedInterval;
 						if (device instanceof PascoUsbSensorDevice) {
 							zeroSamplesIsAnError = false;
 						}
 						boolean deviceIsRunning = device.start();
 						if(deviceIsRunning) {
 							System.out.println("started device");
-							collectionTask = executor.scheduleAtFixedRate(r, adjustedInterval, adjustedInterval, TimeUnit.MILLISECONDS);
+							collectionTask = executor.scheduleAtFixedRate(r, initialDelay, adjustedInterval, TimeUnit.MILLISECONDS);
 						} else {
 							// we should send a notification here that something went wrong
 							System.err.println("error starting the device");
@@ -496,6 +513,7 @@ public class SensorStateManager {
 						if (device != null) {
 							deviceFactory.destroyDevice(device);
 							device = null;
+							currentInterfaceType = NULL_INTERFACE_TYPE;
 						}
 					}
 				};
@@ -566,6 +584,31 @@ public class SensorStateManager {
 		return reportedConfig;
 	}
 
+	void pollChannelValues() {
+		Runnable r = new Runnable() {
+			public void run() {
+				ExperimentConfig expConfig = getDeviceConfig();
+				if (expConfig == null) {
+					throw new RuntimeException("Error polling channel values");
+				}
+				SensorConfig[] sensors = expConfig.getSensorConfigs();
+				int sensorCount = sensors != null ? sensors.length : 0;
+				float[] channelValues = new float[sensorCount];
+				int valueCount = device.pollChannelValues(expConfig, channelValues);
+				if (valueCount >= 0) {
+					datasink.setLastPolledData(expConfig, channelValues);
+				}
+				else if (valueCount < 0) {
+					throw new RuntimeException("Error polling channel values");
+				}
+			}
+		};
+		if (! executeAndWait(r, 10)) {
+			// exception trying to read channel values
+			throw new RuntimeException("Error polling channel values.");
+		}
+	}
+
 	private int numErrors = 0;
 	private int numSensors = 0;
 	private long adjustedInterval = 100;
@@ -618,7 +661,7 @@ public class SensorStateManager {
 				
 				int numCollected = 0;
 				while (numErrors < MAX_READ_ERRORS && numCollected < 1) {
-					logger.debug("Trying to read data from the device...");
+					logger.debug(String.format("Attempt %d to read data from the device...", numErrors + 1));
 					try {
 						final int numSamples = device.read(buffer, 0, numSensors, null);
 						if (numSamples > 0) {
@@ -626,7 +669,8 @@ public class SensorStateManager {
 							synchronized (data) {
 								System.arraycopy(buffer, 0, data, 0, numSensors);
 							}
-							logger.debug("Successfully captured data!");
+							logger.debug(String.format("Successfully read %d samples from the device after %d errors!",
+										numSamples, numErrors));
 							numCollected++;
 							numErrors = 0;
 						} else {

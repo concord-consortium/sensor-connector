@@ -4,6 +4,18 @@ SensorConnector is a desktop application which connects to sensors made by Verni
 
 Note that currently SensorConnector can only connect to one interface at a time, e.g. one LabQuest or one Go! device. Multiple sensors are supported for interfaces such as the LabQuest that support multiple sensors.
 
+## Supported Interfaces
+
+### Vernier
+
+- LabQuest Mini/LabQuest Stream?/LabQuest 2?
+- Go!Link, Go!Temp, Go!Motion
+- LabPro
+
+### Pasco
+
+- ?
+
 ## Usage
 
 The SensorConnector application responds to http/https requests to the following addresses/ports:
@@ -119,7 +131,7 @@ For more info on signing apps and packages on Windows, these step-by-step instru
 #### OS X
 
 - the last [**Java 6 release**](http://support.apple.com/kb/DL1572?viewlocale=en_US) is the only available 32-bit JDK
-- PackageMaker is needed to build the installation package. Log into developer.apple.com with your free dev account. Then go here: https://developer.apple.com/downloads/index.action and search for PackageMaker. It should be listed under Auxillary Tools for XCode. Make sure to download the latest one.
+- PackageMaker is needed to build the installation package. Log into developer.apple.com with your free dev account. Then go here: https://developer.apple.com/downloads/index.action and search for PackageMaker. It should be listed under Auxiliary Tools for XCode. Make sure to download the latest one.
 
 ## October 2017 Update
 
@@ -136,7 +148,7 @@ mvn install
 
 ### Install Tungsten-FSM
 
-The SensorConnector application also requires a third-party finite state machine library named `Tungsten-FSM`. This is a component of a larger open source project call the [Tungsten Replicator](https://sourceforge.net/projects/tungsten-replicator). As I write this, the shipping version of SensorConnector was built with version 1.0 of Tungsten-FSM, which was available from the Concord Consortium-hosted Maven repository. I was able to track down version 1.1 of Tungsten-FSM, which is now included in the `lib` folder and which appears to have the same API, but this combination will require further testing.
+The SensorConnector application also requires a third-party finite state machine library named `Tungsten-FSM`. This is a component of a larger open source project call the [Tungsten Replicator](https://github.com/continuent/tungsten-replicator). As I write this, the shipping version of SensorConnector was built with version 1.0 of Tungsten-FSM, which was available from the Concord Consortium-hosted Maven repository. I was able to track down version 1.2 of Tungsten-FSM, which is now included in the `lib` folder and which appears to have the same API, but this combination will require further testing.
 
 To build and install the local Tungsten-FSM version 1.1, run
 ```

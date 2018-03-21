@@ -3,6 +3,7 @@ target
 .project
 .classpath
 .settings
+.vscode
 dist/*.msi
 SensorConnector-*msi
 SensorConnector-*exe
