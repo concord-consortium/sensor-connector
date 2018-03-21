@@ -47,7 +47,7 @@
 
   <target name="build" depends="prep">
     <echo file="src/main/resources/VERSION" append="false">1.0.${DSTAMP} 32-bit</echo>
-    <exec executable="mvn.bat" failonerror="true" osfamily="windows">
+    <exec executable="mvn.cmd" failonerror="true" osfamily="windows">
       <arg value="-U" />
       <arg value='-DexcludeClassifiers="linux-x86,linux-x86_64,linux-arm,windows-x86_64,osx-x86,osx-x86_64"' />
       <arg value="clean" />
