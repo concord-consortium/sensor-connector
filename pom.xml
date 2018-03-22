@@ -12,6 +12,8 @@
 
   <properties>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+    <timestamp>${maven.build.timestamp}</timestamp>
+    <maven.build.timestamp.format>yyyMMdd-HHmmss</maven.build.timestamp.format>
   </properties>
 
   <repositories>
@@ -26,7 +28,7 @@
   </repositories>
 
   <build>
-   <finalName>${project.artifactId}-${project.version}-${maven.build.timestamp}</finalName>
+   <finalName>${project.artifactId}-${project.version}-${timestamp}</finalName>
     <plugins>
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
