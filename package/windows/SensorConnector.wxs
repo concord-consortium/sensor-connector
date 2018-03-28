@@ -2,9 +2,10 @@
 <Wix xmlns="http://schemas.microsoft.com/wix/2006/wi"
      xmlns:util="http://schemas.microsoft.com/wix/UtilExtension">
     <!-- When packaging a new installer, regenerate the product id, and
-         bump the 3rd element of the version property (since windows ignored the 4th element entirely) -->
+         bump the 3rd element of the version property (since windows ignored the 4th element entirely)
+        Version should be synchronized with win-bundles.wxs. -->
     <Product Id="86ce53da-52cc-4b31-b8a4-96be1fd229ed" Name="SensorConnector"
-             Language="1033" Codepage="1252" Version="1.0.1.0"
+             Language="1033" Codepage="1252" Version="1.1.0"
              Manufacturer="Concord Consortium"
              UpgradeCode="b5f2e77a-9a6a-46ca-be60-c9e181b15c63">
         <Package Description="Sensor Connector Application" Comments="None"
