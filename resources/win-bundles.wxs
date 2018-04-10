@@ -27,6 +27,11 @@
         Permanent="yes"
         Visible="yes"
         SourceFile="resources\drivers\PASCOUSBDrivers.msi" />
+      <MsiPackage
+        ForcePerMachine="yes"
+        Permanent="yes"
+        Visible="yes"
+        SourceFile="resources\drivers\VSTidi.msi" />
     </Chain>
   </Bundle>
 </Wix>
