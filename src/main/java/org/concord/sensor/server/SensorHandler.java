@@ -64,6 +64,10 @@ public class SensorHandler extends AbstractHandler implements DataSink {
 			appendColumnsInfo(json, getCurrentClient(request));
 			appendCollectionInfo(json, getCurrentClient(request));
 			appendVersionInfo(json);
+		} else if (target.equals("/exit")) {
+			stateManager.stop();
+			stateManager.disconnect();
+			System.exit(0);
 		} else if (target.equals("/connect")) {
 			stateManager.connect();
 		} else if (target.equals("/disconnect")) {

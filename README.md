@@ -24,6 +24,8 @@ The SensorConnector application responds to http/https requests to the following
 
 The server responds to 'GET' requests at the following API endpoints. Where responses are provided, they are JSON-formatted UTF8-encoded.
 
+On Mac OS and Windows the SensorConnector application also registers `ccsc` (**C**oncord **C**onsortium **S**ensor**C**onnector) as a custom URL scheme and file extension.
+
 ### / or /status : IStatusReceivedTuple
 
 Response is the current status of the SensorConnector, including the interface connected (if any), the sensors that are connected, etc. The response is a two-element array in which the sensor configuration is in `response[1]`. The response has this form as a TypeScript definition:
@@ -79,6 +81,10 @@ Scan for available devices to connect to and attempt to connect to the first one
 ### /disconnect
 
 Disconnect from any connected device. Clients may not need to call this method as the SensorConnector application attempts to disconnect automatically on application termination. The response is the SensorConnector state at the time the request was processed.
+
+### /exit
+
+Disconnect from any connected device and quit the SensorConnector application. Quitting and restarting the SensorConnector application is sometimes useful as a troubleshooting technique. Note that this sends a request to the SensorConnector application. The SensorConnector application must be running and processing incoming requests for it to have the desired effect.
 
 ### /control/start
 
