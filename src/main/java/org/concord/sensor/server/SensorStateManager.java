@@ -2,6 +2,7 @@ package org.concord.sensor.server;
 
 import java.awt.EventQueue;
 import java.util.Arrays;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
@@ -68,6 +69,11 @@ public class SensorStateManager {
 	private boolean zeroSamplesIsAnError = true;
 	
 	private DataSink datasink;
+
+	// measured time since last device connection starts at launch
+	private Date lastConnectedTime = new Date();
+	// measured time since last data collection starts at launch
+	private Date lastCollectedTime = new Date();
 
 	public SensorStateManager(DataSink datasink) throws FiniteStateException, Exception {
 		this.datasink = datasink;
@@ -137,6 +143,16 @@ public class SensorStateManager {
 			return "None Found";
 		}
 		return DeviceFinder.getDeviceName(currentInterfaceType);
+	}
+
+	// returns the time since the last device connection in seconds (as a double)
+	public double timeSinceConnection() {
+		return ((new java.util.Date()).getTime() - lastConnectedTime.getTime()) / 1000;
+	}
+	
+	// returns the time since the last data collection in seconds (as a double)
+	public double timeSinceCollection() {
+		return ((new java.util.Date()).getTime() - lastCollectedTime.getTime()) / 1000;
 	}
 	
 	private StateTransitionMap generateStateTransitionMap() throws FiniteStateException {
@@ -343,6 +359,8 @@ public class SensorStateManager {
 							else {
 								readSingleValue();
 							}
+							// update our time since last connection
+							lastConnectedTime = new Date();
 						} catch (Exception e) {
 							errorCount++;
 							logger.error("Failed to read data from the device!", e);
@@ -477,7 +495,8 @@ public class SensorStateManager {
 								e.printStackTrace();
 							}
 						}
-
+						// update our time since last collection
+						lastCollectedTime = new Date();
 					}
 				};
 				execute(start, 0);
@@ -495,6 +514,8 @@ public class SensorStateManager {
 					public void run() {
 						logger.debug("Stopping device: " + Thread.currentThread().getName());
 						device.stop(true);
+						// update our time since last collection
+						lastCollectedTime = new Date();
 					}
 				};
 
