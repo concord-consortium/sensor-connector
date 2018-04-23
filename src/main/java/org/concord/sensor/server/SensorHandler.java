@@ -2,6 +2,7 @@ package org.concord.sensor.server;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.UUID;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -26,6 +27,8 @@ public class SensorHandler extends AbstractHandler implements DataSink {
 	private boolean initialized = false;
 	private String currentClient = "default";
 	private String currentClientFriendlyName = null;
+	// time since last request defaults to launch time
+	private Date lastRequestTime = new Date();
 
 	public SensorHandler() {
 		sessionId = UUID.randomUUID().toString();
@@ -49,6 +52,9 @@ public class SensorHandler extends AbstractHandler implements DataSink {
 		if (!initialized) { init(); }
 		baseRequest.setHandled(true);
 		JSONObject json = new JSONObject();
+
+		// update our time since last client request
+		lastRequestTime = new Date();
 
 		response.setCharacterEncoding("UTF-8");
 		response.setContentType("application/json");
@@ -266,6 +272,21 @@ public class SensorHandler extends AbstractHandler implements DataSink {
 	public String getCurrentInterface() {
 		if (!initialized) { init(); }
 		return stateManager.currentInterface();
+	}
+
+	// returns the time since the last client request in seconds
+	public double getTimeSinceRequest() {
+		return ((new java.util.Date()).getTime() - lastRequestTime.getTime()) / 1000;
+	}
+
+	// returns the time since the last device connection in seconds
+	public double getTimeSinceConnection() {
+		return stateManager.timeSinceConnection();
+	}
+
+	// returns the time since the last data collection in seconds
+	public double getTimeSinceCollection() {
+		return stateManager.timeSinceCollection();
 	}
 
 	public void shutdown() {

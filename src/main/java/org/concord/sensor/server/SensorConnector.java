@@ -45,6 +45,13 @@ public class SensorConnector extends JFrame
 	static final String MAC_EXIT_TEXT = "To exit, click the icon like this in the top menu bar and select 'Exit'.";
 	static final String WIN_EXIT_TEXT = "To exit, right-click the icon like this in the task bar and select 'Exit'.";
 
+	// period of time without a request from the client to be considered idle
+	static final double SENSOR_CONNECTOR_IDLE_REQUEST_TIMEOUT_SEC = 300;
+	// period of time without a device interface connection to be considered idle
+	static final double DEVICE_INTERFACE_IDLE_CONNECT_TIMEOUT_SEC = 300;
+	// period of time since last active data collection to be considered idle
+	static final double DATA_COLLECTION_IDLE_TIMEOUT_SEC = 1800;
+
 	private static Server server = null;
 	public static void main( String[] args ) throws Exception
     {
@@ -102,7 +109,22 @@ public class SensorConnector extends JFrame
     	infoFrame.iconify("The sensor connector is running in the background. " + exitText, TrayIcon.MessageType.INFO);
 
         // TODO Add status, sensor info to tray/title bar menu or tooltip?
-    	
+
+        // Exit the application if we've been idle for a while
+		Timer t = new Timer();
+		t.scheduleAtFixedRate(new TimerTask() {
+			@Override
+			public void run() {
+				// Exit if we haven't had a client request or device connection in a while
+				if (((handler.getTimeSinceRequest() >= SENSOR_CONNECTOR_IDLE_REQUEST_TIMEOUT_SEC) &&
+					(handler.getTimeSinceConnection() >= DEVICE_INTERFACE_IDLE_CONNECT_TIMEOUT_SEC)) ||
+					// Exit if we haven't collected data in a longer while
+					(handler.getTimeSinceCollection() >= DATA_COLLECTION_IDLE_TIMEOUT_SEC)) {
+					System.exit(0);
+				}
+			}
+		}, 0, 5000);
+		
     	Runtime.getRuntime().addShutdownHook(new Thread() {
     	    public void run() {
     	    	try {
