@@ -6,7 +6,7 @@
   <condition property="certname" value="${env.CERT_NAME}">
     <isset property="env.CERT_NAME" />
   </condition>
-  <condition property="certname" value="Developer ID Application: Concord Consortium Inc (T8HS8WBPPQ)">
+  <condition property="certname" value="Developer ID Application: Concord Consortium">
     <and>
       <os family="mac" />
       <not>
@@ -175,12 +175,11 @@
     </condition>
     <echo message="JRE: ${jre} - Set JRE_HOME to override!" />
     <!-- Run script to set JRE_NAME from JRE_HOME -->
-    <exec executable="/bin/bash">
-      <arg line="-c 'source ./script/jre-name.sh'" />
-    </exec>
+    <exec executable="./script/jre-name.sh" outputproperty="jre_name" />
     <condition property="jre_name" value="${env.JRE_NAME}">
       <isset property="env.JRE_NAME" />
     </condition>
+    <echo message="JRE_NAME: ${jre_name} - Set JRE_NAME to override!" />
     <copy file="resources/bg.png" todir="dist/app/.background" />
     <bundleapp outputdirectory="dist/app"
                name="SensorConnector" displayname="Sensor Connector"
