@@ -90,7 +90,7 @@
     </copy>
     <fx:deploy verbose="true" nativeBundles="msi" width="100" height="100" outdir="dist/" outfile="${APP_NAME}">
       <info title="${APP_DISPLAY_NAME}" vendor="Concord Consortium" description="${APP_DISPLAY_NAME} Application" />
-      <fx:application mainClass="${APP_JAVA_CLASS}" toolkit="swing"/>
+      <fx:application name="${APP_NAME}" mainClass="${APP_JAVA_CLASS}" toolkit="swing" version="${APP_VERSION}" />
       <fx:resources>
         <fx:fileset dir="target/dependency">
           <include name="**/*.jar" />
