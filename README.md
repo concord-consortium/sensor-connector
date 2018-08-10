@@ -136,7 +136,8 @@ For more info on signing apps and packages on Windows, these step-by-step instru
 
 #### OS X
 
-- the last [**Java 6 release**](http://support.apple.com/kb/DL1572?viewlocale=en_US) is the only available 32-bit JDK
+- The last [**Java 6 release**](http://support.apple.com/kb/DL1572?viewlocale=en_US) is the only available 32-bit JDK
+  - As of August 2018, the Java6 installer linked above installs an incomplete version of the Java6 JDK. See the private sensor-sdks repository for information on how to deal with this.
 - PackageMaker is needed to build the installation package. Log into developer.apple.com with your free dev account. Then go here: https://developer.apple.com/downloads/index.action and search for PackageMaker. It should be listed under Auxiliary Tools for XCode. Make sure to download the latest one.
 
 ## October 2017 Update
