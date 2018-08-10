@@ -2,7 +2,14 @@
 <project name="SensorConnector" default="build" basedir="." xmlns:fx="javafx:com.sun.javafx.tools.ant">
 
   <property environment="env" />
+  <property name="APP_NAME" value="SensorConnector" />
+  <property name="APP_NAME_MAC" value="${APP_NAME}.app" />
+  <property name="APP_DISPLAY_NAME" value="Sensor Connector" />
+  <property name="APP_JAVA_CLASS" value="org.concord.sensor.server.${APP_NAME}" />
+  <property name="APP_VERSION" value="1.1.1" />
   <tstamp/><!-- Sets DSTAMP ('yyyyMMdd'), TSTAMP ('hhmm'), and TODAY ('MMMM dd yyyy') -->
+  <property name="APP_VERSIONED_NAME" value="${APP_NAME}-${APP_VERSION}" />
+  <property name="APP_TIMESTAMPED_NAME" value="${APP_VERSIONED_NAME}-${DSTAMP}-${TSTAMP}" />
   <condition property="certname" value="${env.CERT_NAME}">
     <isset property="env.CERT_NAME" />
   </condition>
@@ -46,7 +53,7 @@
   </target>
 
   <target name="build" depends="prep">
-    <echo file="src/main/resources/VERSION" append="false">1.0.${DSTAMP} 32-bit</echo>
+    <echo file="src/main/resources/VERSION" append="false">${APP_VERSION}.${DSTAMP} 32-bit</echo>
     <exec executable="mvn.cmd" failonerror="true" osfamily="windows">
       <arg value="-U" />
       <arg value='-DexcludeClassifiers="linux-x86,linux-x86_64,linux-arm,windows-x86_64,osx-x86,osx-x86_64"' />
@@ -64,7 +71,7 @@
   </target>
 
   <target name="build-mac-x64" depends="prep">
-    <echo file="src/main/resources/VERSION" append="false">1.0.${DSTAMP} 64-bit</echo>
+    <echo file="src/main/resources/VERSION" append="false">${APP_VERSION}.${DSTAMP} 64-bit</echo>
     <exec executable="mvn" failonerror="true" osfamily="mac">
       <arg value="-U" />
       <arg value='-DexcludeClassifiers="linux-x86,linux-x86_64,linux-arm,windows-x86,windows-x86_64"' />
@@ -81,9 +88,9 @@
         <include name="sensor-connector-*.jar" />
       </fileset>
     </copy>
-    <fx:deploy verbose="true" nativeBundles="msi" width="100" height="100" outdir="dist/" outfile="SensorConnector">
-      <info title="Sensor Connector" vendor="Concord Consortium" description="Sensor Connector Application" />
-      <fx:application mainClass="org.concord.sensor.server.SensorConnector" toolkit="swing"/>
+    <fx:deploy verbose="true" nativeBundles="msi" width="100" height="100" outdir="dist/" outfile="${APP_NAME}">
+      <info title="${APP_DISPLAY_NAME}" vendor="Concord Consortium" description="${APP_DISPLAY_NAME} Application" />
+      <fx:application name="${APP_NAME}" mainClass="${APP_JAVA_CLASS}" toolkit="swing" version="${APP_VERSION}" />
       <fx:resources>
         <fx:fileset dir="target/dependency">
           <include name="**/*.jar" />
@@ -105,25 +112,25 @@
       </fx:resources>
     </fx:deploy>
     <exec executable="signtool.exe" dir="dist/bundles" failonerror="false">
-      <arg line="sign /n '${certname}' /tr http://tsa.starfieldtech.com /td SHA256 /v SensorConnector-1.0.msi" />
+      <arg line="sign /n '${certname}' /tr http://tsa.starfieldtech.com /td SHA256 /v ${APP_VERSIONED_NAME}.msi" />
     </exec>
-    <move file="dist/bundles/SensorConnector-1.0.msi" tofile="dist/SensorConnector-${DSTAMP}-${TSTAMP}.msi" />
+    <move file="dist/bundles/${APP_VERSIONED_NAME}.msi" tofile="dist/${APP_TIMESTAMPED_NAME}.msi" />
   </target>
 
   <target name="win-bundle" depends="fx-package">
-    <copy file="dist/SensorConnector-${DSTAMP}-${TSTAMP}.msi" tofile="dist/SensorConnector.msi" />
+    <copy file="dist/${APP_TIMESTAMPED_NAME}.msi" tofile="dist/${APP_NAME}.msi" />
     <exec executable="script/win-bundle.bat" />
-    <move file="dist/SensorConnector-bundle.exe" tofile="dist/SensorConnector-${DSTAMP}-${TSTAMP}-unsigned.exe" />
+    <move file="dist/${APP_NAME}-bundle.exe" tofile="dist/${APP_TIMESTAMPED_NAME}-unsigned.exe" />
     <exec executable="insignia.exe" dir="dist" failonerror="false">
-      <arg line='-ib SensorConnector-${DSTAMP}-${TSTAMP}-unsigned.exe -o engine.exe' />
+      <arg line='-ib ${APP_TIMESTAMPED_NAME}-unsigned.exe -o engine.exe' />
     </exec>
     <exec executable="signtool.exe" dir="dist" failonerror="false">
       <arg line="sign /n '${certname}' /tr http://tsa.starfieldtech.com /td SHA256 /v engine.exe" />
     </exec>
     <exec executable="insignia.exe" dir="dist" failonerror="false">
-      <arg line='-ab engine.exe SensorConnector-${DSTAMP}-${TSTAMP}-unsigned.exe -o SensorConnector-${DSTAMP}-${TSTAMP}.exe' />
+      <arg line='-ab engine.exe ${APP_TIMESTAMPED_NAME}-unsigned.exe -o ${APP_TIMESTAMPED_NAME}.exe' />
     </exec>
-    <echo message="Built version: ${DSTAMP}-${TSTAMP}" />
+    <echo message="Built: ${APP_TIMESTAMPED_NAME}" />
   </target>
 
   <target name="mac-stage" depends="build">
@@ -134,34 +141,34 @@
     </condition>
     <echo message="JRE: ${jre}${line.separator}Set JRE_HOME to override!" />
     <copy file="resources/bg.png" todir="dist/app/.background" />
-    <mkdir dir="dist/app/SensorConnector.app" />
-    <mkdir dir="dist/app/SensorConnector.app/Contents" />
-    <mkdir dir="dist/app/SensorConnector.app/Contents/MacOS" />
-    <mkdir dir="dist/app/SensorConnector.app/Contents/Resources" />
-    <mkdir dir="dist/app/SensorConnector.app/Contents/Java" />
-    <mkdir dir="dist/app/SensorConnector.app/Contents/Frameworks" />
-    <copy file="resources/cc-lightbulb.icns" todir="dist/app/SensorConnector.app/Contents/Resources" />
-    <copy file="resources/Info.plist" todir="dist/app/SensorConnector.app/Contents" />
-    <copy file="resources/run.sh" todir="dist/app/SensorConnector.app/Contents/MacOS" />
-    <copy todir="dist/app/SensorConnector.app/Contents/MacOS" flatten="true">
+    <mkdir dir="dist/app/${APP_NAME_MAC}" />
+    <mkdir dir="dist/app/${APP_NAME_MAC}/Contents" />
+    <mkdir dir="dist/app/${APP_NAME_MAC}/Contents/MacOS" />
+    <mkdir dir="dist/app/${APP_NAME_MAC}/Contents/Resources" />
+    <mkdir dir="dist/app/${APP_NAME_MAC}/Contents/Java" />
+    <mkdir dir="dist/app/${APP_NAME_MAC}/Contents/Frameworks" />
+    <copy file="resources/cc-lightbulb.icns" todir="dist/app/${APP_NAME_MAC}/Contents/Resources" />
+    <copy file="resources/Info.plist" todir="dist/app/${APP_NAME_MAC}/Contents" />
+    <copy file="resources/run.sh" todir="dist/app/${APP_NAME_MAC}/Contents/MacOS" />
+    <copy todir="dist/app/${APP_NAME_MAC}/Contents/MacOS" flatten="true">
       <fileset dir="resources/certutil-mac" />
     </copy>
-    <chmod perm="a+x" file="dist/app/SensorConnector.app/Contents/MacOS/run.sh" />
-    <chmod perm="a+x" file="dist/app/SensorConnector.app/Contents/MacOS/certutilff" />
-    <copy todir="dist/app/SensorConnector.app/Contents/Java" flatten="true">
+    <chmod perm="a+x" file="dist/app/${APP_NAME_MAC}/Contents/MacOS/run.sh" />
+    <chmod perm="a+x" file="dist/app/${APP_NAME_MAC}/Contents/MacOS/certutilff" />
+    <copy todir="dist/app/${APP_NAME_MAC}/Contents/Java" flatten="true">
       <fileset dir="target">
         <include name="**/*.jar" />
       </fileset>
     </copy>
-    <copy file="resources/libusb-1.0.dylib" todir="dist/app/SensorConnector.app/Contents/Frameworks" />
+    <copy file="resources/libusb-1.0.dylib" todir="dist/app/${APP_NAME_MAC}/Contents/Frameworks" />
     <exec executable="./script/copy_and_remove_symlinks.sh">
       <arg value="${jre}" />
-      <arg value="${user.dir}/dist/app/SensorConnector.app/Contents/Resources/jdk" />
+      <arg value="${user.dir}/dist/app/${APP_NAME_MAC}/Contents/Resources/jdk" />
     </exec>
-    <exec executable="rmdir" dir="dist/app/SensorConnector.app/Contents/Resources/jdk/Home">
+    <exec executable="rmdir" dir="dist/app/${APP_NAME_MAC}/Contents/Resources/jdk/Home">
       <arg line='bundle' />
     </exec>
-    <exec executable="bash" dir="dist/app/SensorConnector.app/Contents/Resources/jdk/Home">
+    <exec executable="bash" dir="dist/app/${APP_NAME_MAC}/Contents/Resources/jdk/Home">
       <arg line='-c "ln -s ../ bundle"' />
     </exec>
   </target>
@@ -182,12 +189,12 @@
     <echo message="JRE_NAME: ${jre_name} - Set JRE_NAME to override!" />
     <copy file="resources/bg.png" todir="dist/app/.background" />
     <bundleapp outputdirectory="dist/app"
-               name="SensorConnector" displayname="Sensor Connector"
-               executableName="SensorConnector"
-               shortversion="1.0" version="1.0.0"
+               name="${APP_NAME}" displayname="${APP_DISPLAY_NAME}"
+               executableName="${APP_NAME}"
+               shortversion="${APP_VERSION}" version="${APP_VERSION}"
                icon="resources/cc-lightbulb.icns"
-               identifier="org.concord.sensor.server.SensorConnector"
-               mainclassname="org.concord.sensor.server.SensorConnector">
+               identifier="${APP_JAVA_CLASS}"
+               mainclassname="${APP_JAVA_CLASS}">
 
       <arch name="x86_64" />
       <arch name="i386" />
@@ -202,30 +209,30 @@
 
       <bundledocument extensions="ccss"
         icon="resources/cc-lightbulb.icns"
-        name="Sensor Connector Doc"
+        name="${APP_DISPLAY_NAME} Doc"
         role="viewer">
       </bundledocument>
     </bundleapp>
     <exec executable="/usr/libexec/PlistBuddy" dir="dist/app">
-      <arg line='-c "Add LSUIElement String 1" SensorConnector.app/Contents/Info.plist' />
+      <arg line='-c "Add LSUIElement String 1" ${APP_NAME_MAC}/Contents/Info.plist' />
     </exec>
     <exec executable="/usr/libexec/PlistBuddy" dir="dist/app">
-      <arg line='-c "Add LSUIPresentationMode String 4" SensorConnector.app/Contents/Info.plist' />
+      <arg line='-c "Add LSUIPresentationMode String 4" ${APP_NAME_MAC}/Contents/Info.plist' />
     </exec>
     <exec executable="/usr/libexec/PlistBuddy" dir="dist/app">
-      <arg line='-c "Add LSMultipleInstancesProhibited bool true" SensorConnector.app/Contents/Info.plist' />
+      <arg line='-c "Add LSMultipleInstancesProhibited bool true" ${APP_NAME_MAC}/Contents/Info.plist' />
     </exec>
-    <copy todir="dist/app/SensorConnector.app/Contents/MacOS" flatten="true">
+    <copy todir="dist/app/${APP_NAME_MAC}/Contents/MacOS" flatten="true">
       <fileset dir="resources/certutil-mac" />
     </copy>
-    <chmod perm="a+x" file="dist/app/SensorConnector.app/Contents/MacOS/SensorConnector" />
-    <chmod perm="a+x" file="dist/app/SensorConnector.app/Contents/MacOS/certutilff" />
+    <chmod perm="a+x" file="dist/app/${APP_NAME_MAC}/Contents/MacOS/${APP_NAME}" />
+    <chmod perm="a+x" file="dist/app/${APP_NAME_MAC}/Contents/MacOS/certutilff" />
 
-    <exec executable="rm" dir="dist/app/SensorConnector.app/Contents/PlugIns/${jre_name}/Contents/MacOS/">
+    <exec executable="rm" dir="dist/app/${APP_NAME_MAC}/Contents/PlugIns/${jre_name}/Contents/MacOS/">
       <arg value="libjli.dylib" />
     </exec>
-    <copy file="dist/app/SensorConnector.app/Contents/PlugIns/${jre_name}/Contents/Home/jre/lib/jli/libjli.dylib"
-         todir="dist/app/SensorConnector.app/Contents/PlugIns/${jre_name}/Contents/MacOS/" />
+    <copy file="dist/app/${APP_NAME_MAC}/Contents/PlugIns/${jre_name}/Contents/Home/jre/lib/jli/libjli.dylib"
+         todir="dist/app/${APP_NAME_MAC}/Contents/PlugIns/${jre_name}/Contents/MacOS/" />
   </target>
 
   <target name="mac-sign">
@@ -234,7 +241,7 @@
       <arg value="--deep" />
       <arg value="-s" />
       <arg value="${certname}" />
-      <arg value="dist/app/SensorConnector.app" />
+      <arg value="dist/app/${APP_NAME_MAC}" />
     </exec>
   </target>
 
@@ -245,9 +252,9 @@
       <arg value="-f" />
       <arg value="-s" />
       <arg value="${certname}" />
-      <arg value="dist/SensorConnector.dmg" />
+      <arg value="dist/${APP_NAME}.dmg" />
     </exec>
-    <move file="dist/SensorConnector.dmg" tofile="dist/SensorConnector-${DSTAMP}-${TSTAMP}.dmg" />
+    <move file="dist/${APP_NAME}.dmg" tofile="dist/${APP_TIMESTAMPED_NAME}-x32.dmg" />
   </target>
 
   <target name="mac-package-x64" depends="prep,build,mac-stage-x64,mac-sign">
@@ -257,9 +264,9 @@
       <arg value="-f" />
       <arg value="-s" />
       <arg value="${certname}" />
-      <arg value="dist/SensorConnector.dmg" />
+      <arg value="dist/${APP_NAME}.dmg" />
     </exec>
-    <move file="dist/SensorConnector.dmg" tofile="dist/SensorConnector-x64-${DSTAMP}-${TSTAMP}.dmg" />
+    <move file="dist/${APP_NAME}.dmg" tofile="dist/${APP_TIMESTAMPED_NAME}-x64.dmg" />
   </target>
 
 </project>
