@@ -11,12 +11,12 @@ if [[ ("$1" == "-32") || ($# -eq 0) ]]; then
   JRE32_HOME=`/usr/libexec/java_home -d 32`
   # for Java6 we want the parent directory
   export JRE_HOME="$(dirname "$JRE32_HOME")"
-  ant mac-package && mv dist/SensorConnector-*.dmg .
+  ant mac-package && mv dist/SensorConnector-*32.dmg .
 fi
 
 # build 64-bit package
 if [[ ("$1" == "-64") || ($# -eq 0) ]]; then
   rm -rf dist
   export JRE_HOME=$JAVA_HOME
-  ant mac-package-x64 && mv dist/SensorConnector-x64-*.dmg .
+  ant mac-package-x64 && mv dist/SensorConnector-*64.dmg .
 fi
