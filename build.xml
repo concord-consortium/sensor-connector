@@ -119,7 +119,9 @@
 
   <target name="win-bundle" depends="fx-package">
     <copy file="dist/${APP_TIMESTAMPED_NAME}.msi" tofile="dist/${APP_NAME}.msi" />
-    <exec executable="script/win-bundle.bat" />
+    <exec executable="script/win-bundle.bat">
+      <env key="APP_VERSION" value="${APP_VERSION}"/>
+    </exec>
     <move file="dist/${APP_NAME}-bundle.exe" tofile="dist/${APP_TIMESTAMPED_NAME}-unsigned.exe" />
     <exec executable="insignia.exe" dir="dist" failonerror="false">
       <arg line='-ib ${APP_TIMESTAMPED_NAME}-unsigned.exe -o engine.exe' />
