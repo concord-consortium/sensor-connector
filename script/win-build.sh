@@ -1,6 +1,6 @@
 #!/bin/sh
 
-# Usage: With no arguments builds 32-bit and 64-bit packages
+# Usage: With no arguments builds 32-bit package
 #        Use "-32" or "-64" argument to build 32-bit/64-bit package only
 
 export SC_APP_VERSION=`cat version.txt`
