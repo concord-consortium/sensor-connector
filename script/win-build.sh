@@ -9,7 +9,7 @@ export SC_APP_VERSION=`cat version.txt`
 if [[ ("$1" == "-32") || ($# -eq 0) ]]; then
 	export SC_ARCH_BITS=32
 	rm -rf dist
-	ant win-bundle-x32 && mv dist/SensorConnector-*.msi . && mv dist/SensorConnector-*.exe .
+	ant win-bundle-x86 && mv dist/SensorConnector-*.msi . && mv dist/SensorConnector-*.exe .
 	rm *unsigned*
 fi
 

@@ -149,7 +149,7 @@
 
   <target name="win-bundle-x64" depends="build-win-x64, fx-package, win-bundle" />
 
-  <target name="win-bundle-x32" depends="build, fx-package, win-bundle" />
+  <target name="win-bundle-x86" depends="build, fx-package, win-bundle" />
 
   <target name="mac-stage" depends="build">
     <condition property="jre" value="/System/Library/Frameworks/JavaVM.framework/Versions/CurrentJDK">
