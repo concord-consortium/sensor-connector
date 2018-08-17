@@ -1,4 +1,15 @@
-<?xml version="1.0" encoding="windows-1252"?>
+<?xml version="1.0" encoding="windows-1252"?> 
+
+<?if $(env.SC_ARCH_BITS) = "64" ?>
+  <?warning build is 64 bits, specify version in win-build.sh if this is incorrect ?>
+  <?define Win64 = "yes" ?>
+  <?define Platform = "x64" ?>
+<?else ?>
+  <?warning build is 32 bits, specify version in win-build.sh if this is incorrect ?>
+  <?define Win64 = "no" ?>
+  <?define Platform = "x86" ?>
+<?endif ?>
+
 <Wix xmlns="http://schemas.microsoft.com/wix/2006/wi"
      xmlns:util="http://schemas.microsoft.com/wix/UtilExtension">
     <!-- When packaging a new installer, regenerate the product id, and
@@ -11,6 +22,7 @@
         <Package Description="Sensor Connector Application" Comments="None"
                  InstallerVersion="310" Compressed="yes"
                  InstallPrivileges="elevated"
+                 Platform="$(var.Platform)"
                  InstallScope="perMachine"/>
         <Media Id="1" Cabinet="simple.cab" EmbedCab="yes" />
         <Property Id="MSIRESTARTMANAGERCONTROL" Value="Disable" Secure="yes" />
@@ -35,7 +47,7 @@
                             Id="APPLICATIONFOLDER_REGSEARCH" Name="Path" />
         </Property>
         <DirectoryRef Id="APPLICATIONFOLDER">
-            <Component Id="CleanupMainApplicationFolder" Guid="e944efdd-3ecc-45e4-9ba2-7a1814aa0d1e">
+            <Component Id="CleanupMainApplicationFolder" Guid="e944efdd-3ecc-45e4-9ba2-7a1814aa0d1e" Win64="$(var.Win64)">
                 <RegistryValue Root="HKLM"
                                    Key="SOFTWARE\Concord Consortium\SensorConnector"
                                    Name="Path" Type="string" Value="[APPLICATIONFOLDER]"
