@@ -93,7 +93,7 @@
     </exec>
   </target>
 
-  <target name="fx-package" depends="build">
+  <target name="fx-package">
     <fail unless="env.JAVA_HOME" message="You must set JAVA_HOME (eg: 'export JAVA_HOME=`/usr/libexec/java_home`')" />
     <copy todir="target/dependency">
       <fileset dir="target">
@@ -129,43 +129,7 @@
     <move file="dist/bundles/${APP_VERSIONED_NAME}.msi" tofile="dist/${APP_TIMESTAMPED_NAME}.msi" />
   </target>
 
-   <target name="fx-package-x64" depends="build-win-x64">
-    <fail unless="env.JAVA_HOME" message="You must set JAVA_HOME (eg: 'export JAVA_HOME=`/usr/libexec/java_home`')" />
-    <copy todir="target/dependency">
-      <fileset dir="target">
-        <include name="sensor-connector-*.jar" />
-      </fileset>
-    </copy>
-    <fx:deploy verbose="true" nativeBundles="msi" width="100" height="100" outdir="dist/" outfile="SensorConnector">
-      <info title="Sensor Connector" vendor="Concord Consortium" description="Sensor Connector Application" />
-      <fx:application mainClass="org.concord.sensor.server.SensorConnector" toolkit="swing"/>
-      <fx:resources>
-        <fx:fileset dir="target/dependency">
-          <include name="**/*.jar" />
-        </fx:fileset>
-        <fx:fileset dir="${env.JAVA_HOME}/jre/bin">
-          <include name="msvcr100.dll" />
-        </fx:fileset>
-        <fx:fileset dir="resources">
-          <include name="ca.cert.pem" />
-          <include name="win-install-cert.bat" />
-          <include name="win-uninstall-cert.bat" />
-          <include name="cert8.db" />
-          <include name="key3.db" />
-          <include name="secmod.db" />
-        </fx:fileset>
-        <fx:fileset dir="resources/certutil">
-          <include name="**/*" />
-        </fx:fileset>
-      </fx:resources>
-    </fx:deploy>
-    <exec executable="signtool.exe" dir="dist/bundles" failonerror="false">
-      <arg line="sign /n '${certname}' /tr http://tsa.starfieldtech.com /td SHA256 /v SensorConnector-1.0.msi" />
-    </exec>
-    <move file="dist/bundles/SensorConnector-1.0.msi" tofile="dist/SensorConnector-x64-${DSTAMP}-${TSTAMP}.msi" />
-  </target>
-
-  <target name="win-bundle" depends="fx-package">
+  <target name="win-bundle">
     <copy file="dist/${APP_TIMESTAMPED_NAME}.msi" tofile="dist/${APP_NAME}.msi" />
     <exec executable="script/win-bundle.bat">
       <env key="APP_VERSION" value="${APP_VERSION}"/>
@@ -183,21 +147,9 @@
     <echo message="Built: ${APP_TIMESTAMPED_NAME}" />
   </target>
 
-   <target name="win-bundle-x64" depends="fx-package-x64">
-    <copy file="dist/SensorConnector-x64-${DSTAMP}-${TSTAMP}.msi" tofile="dist/SensorConnector.msi" />
-    <exec executable="script/win-bundle.bat" />
-    <move file="dist/SensorConnector-bundle.exe" tofile="dist/SensorConnector-x64-${DSTAMP}-${TSTAMP}-unsigned.exe" />
-    <exec executable="insignia.exe" dir="dist" failonerror="false">
-      <arg line='-ib SensorConnector-x64-${DSTAMP}-${TSTAMP}-unsigned.exe -o engine.exe' />
-    </exec>
-    <exec executable="signtool.exe" dir="dist" failonerror="false">
-      <arg line="sign /n '${certname}' /tr http://tsa.starfieldtech.com /td SHA256 /v engine.exe" />
-    </exec>
-    <exec executable="insignia.exe" dir="dist" failonerror="false">
-      <arg line='-ab engine.exe SensorConnector-x64-${DSTAMP}-${TSTAMP}-unsigned.exe -o SensorConnector-x64-${DSTAMP}-${TSTAMP}.exe' />
-    </exec>
-    <echo message="Built: ${APP_TIMESTAMPED_NAME}" />
-  </target>
+  <target name="win-bundle-x64" depends="build-win-x64, fx-package, win-bundle" />
+
+  <target name="win-bundle-x32" depends="build, fx-package, win-bundle" />
 
   <target name="mac-stage" depends="build">
     <condition property="jre" value="/System/Library/Frameworks/JavaVM.framework/Versions/CurrentJDK">
