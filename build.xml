@@ -6,7 +6,7 @@
   <property name="APP_NAME_MAC" value="${APP_NAME}.app" />
   <property name="APP_DISPLAY_NAME" value="Sensor Connector" />
   <property name="APP_JAVA_CLASS" value="org.concord.sensor.server.${APP_NAME}" />
-  <property name="APP_VERSION" value="1.1.1" />
+  <property name="APP_VERSION" value="${env.SC_APP_VERSION}" />
   <tstamp/><!-- Sets DSTAMP ('yyyyMMdd'), TSTAMP ('hhmm'), and TODAY ('MMMM dd yyyy') -->
   <property name="APP_VERSIONED_NAME" value="${APP_NAME}-${APP_VERSION}" />
   <property name="APP_TIMESTAMPED_NAME" value="${APP_VERSIONED_NAME}-${DSTAMP}-${TSTAMP}" />

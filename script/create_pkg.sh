@@ -14,10 +14,12 @@ cp resources/bg.png dist/package/resources/background.png
 cd dist/package
 
 # TODO Update the version in Distribution.xml
+PKG_VERSION=$SC_APP_VERSION.$(date +%Y%m%d.%H%M)
+echo "Package version: $PKG_VERSION"
 
 # Using pkgbuild and productbuild is more future-proof
-pkgbuild --root ./SensorConnector.app --scripts scripts --identifier org.concord.sensorconnector.app.pkg --version 1.0.$(date +%Y%m%d.%H%M) --install-location /Applications/SensorConnector.app SensorConnectorApp.pkg
+pkgbuild --root ./SensorConnector.app --scripts scripts --identifier org.concord.sensorconnector.app.pkg --version $PKG_VERSION --install-location /Applications/SensorConnector.app SensorConnectorApp.pkg
 productbuild --distribution ./Distribution.xml --resources ./resources --package-path ./SensorConnectorApp.pkg ./SensorConnector-unsigned.pkg
-productsign --sign "Developer ID Installer: Concord Consortium Inc (T8HS8WBPPQ)" SensorConnector-unsigned.pkg ../app/SensorConnector.pkg
+productsign --sign "Developer ID Installer: Concord Consortium" SensorConnector-unsigned.pkg ../app/SensorConnector.pkg
 
 cd -
