@@ -203,6 +203,13 @@
     </condition>
     <echo message="JRE_NAME: ${jre_name} - Set JRE_NAME to override!" />
     <copy file="resources/bg.png" todir="dist/app/.background" />
+    <!--
+      Build App using AppBundler, which is the App Bundling package that preceded fx:deploy.
+      Should consider switching to fx:deploy at some point.
+      https://docs.oracle.com/javase/7/docs/technotes/guides/jweb/packagingAppsForMac.html
+      Note that there is also a third-party fork of AppBundler with some additional features:
+      https://bitbucket.org/infinitekind/appbundler/
+    -->
     <bundleapp outputdirectory="dist/app"
                name="${APP_NAME}" displayname="${APP_DISPLAY_NAME}"
                executableName="${APP_NAME}"
@@ -212,7 +219,6 @@
                mainclassname="${APP_JAVA_CLASS}">
 
       <arch name="x86_64" />
-      <arch name="i386" />
 
       <runtime dir="${jre}" />
       <classpath dir="target/">
@@ -222,20 +228,16 @@
       <option value="-Xmx512M" name="Xmx" />
       <option value="-Xms32M" name="Xms" />
 
-      <bundledocument extensions="ccss"
+      <bundledocument
+        extensions="ccsc"
         icon="resources/cc-lightbulb.icns"
         name="${APP_DISPLAY_NAME} Doc"
-        role="viewer">
-      </bundledocument>
+        role="Viewer"
+      />
     </bundleapp>
-    <exec executable="/usr/libexec/PlistBuddy" dir="dist/app">
-      <arg line='-c "Add LSUIElement String 1" ${APP_NAME_MAC}/Contents/Info.plist' />
-    </exec>
-    <exec executable="/usr/libexec/PlistBuddy" dir="dist/app">
-      <arg line='-c "Add LSUIPresentationMode String 4" ${APP_NAME_MAC}/Contents/Info.plist' />
-    </exec>
-    <exec executable="/usr/libexec/PlistBuddy" dir="dist/app">
-      <arg line='-c "Add LSMultipleInstancesProhibited bool true" ${APP_NAME_MAC}/Contents/Info.plist' />
+    <!-- copy additional plist entries that aren't supported by AppBundler. -->
+    <exec executable="/usr/libexec/PlistBuddy">
+      <arg line='-c "merge resources/Info-merge.plist" dist/app/${APP_NAME_MAC}/Contents/Info.plist' />
     </exec>
     <copy todir="dist/app/${APP_NAME_MAC}/Contents/MacOS" flatten="true">
       <fileset dir="resources/certutil-mac" />
