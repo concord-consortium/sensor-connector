@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+    <dict>
+        <!-- hide dock icon -->
+        <key>LSUIElement</key>
+        <string>1</string>
+        <key>LSUIPresentationMode</key>
+        <string>4</string>
+        <key>LSMultipleInstancesProhibited</key>
+        <true/>
+        <key>CFBundleURLTypes</key>
+        <array>
+            <dict>
+                <key>CFBundleTypeRole</key>
+                <string>Viewer</string>
+                <key>CFBundleURLIconFile</key>
+                <string>cc-lightbulb.icns</string>
+                <key>CFBundleURLName</key>
+                <string>org.concord.sensorconnector</string>
+                <key>CFBundleURLSchemes</key>
+                <array>
+                    <string>ccsc</string>
+                </array>
+            </dict>
+        </array>
+        <key>UTExportedTypeDeclarations</key>
+        <array>
+            <dict>
+                <key>UTTypeConformsTo</key>
+                <array>
+                    <string>public.data</string>
+                </array>
+                <key>UTTypeDescription</key>
+                <string>Sensor Connector File</string>
+                <key>UTTypeIdentifier</key>
+                <string>org.concord.sensorconnector</string>
+                <key>UTTypeTagSpecification</key>
+                <dict>
+                    <key>public.filename-extension</key>
+                    <string>ccsc</string>
+                    <key>public.mime-type</key>
+                    <string>application/vnd-concordconsortium-sensorconnector</string>
+                </dict>
+            </dict>
+        </array>
+    </dict>
+</plist>
