@@ -80,6 +80,9 @@ public class DeviceFinder {
 			case 0x000B: // LabQuest 2
 				logger.fine("Found a Vernier LabQuest 2!");
 				return DeviceID.VERNIER_LAB_QUEST;
+			case 0x0010: // Go Direct
+				logger.fine("Found a Vernier Go Direct!");
+				return DeviceID.VERNIER_GO_DIRECT;				
 			}
 			throw new UnknownProductException("Vernier", productId);
 		case 0x0945: // Pasco
@@ -104,6 +107,8 @@ public class DeviceFinder {
 		case DeviceID.VERNIER_GO_LINK_JNA:
 		case DeviceID.VERNIER_GO_LINK_NATIVE:
 			return "Vernier GoLink!";
+		case DeviceID.VERNIER_GO_DIRECT:
+			return "Vernier Go Direct";			
 		case DeviceID.TI_CONNECT:
 			return "TI Connect"; // ???
 		case DeviceID.FOURIER:
