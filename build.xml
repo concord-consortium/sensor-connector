@@ -274,7 +274,7 @@
       <arg value="${certname}" />
       <arg value="dist/${APP_NAME}.dmg" />
     </exec>
-    <move file="dist/${APP_NAME}.dmg" tofile="dist/${APP_TIMESTAMPED_NAME}-x32.dmg" />
+    <move file="dist/${APP_NAME}.dmg" tofile="dist/${APP_TIMESTAMPED_NAME}.dmg" />
   </target>
 
   <target name="mac-package-x64" depends="prep,build,mac-stage-x64,mac-sign">
@@ -286,7 +286,7 @@
       <arg value="${certname}" />
       <arg value="dist/${APP_NAME}.dmg" />
     </exec>
-    <move file="dist/${APP_NAME}.dmg" tofile="dist/${APP_TIMESTAMPED_NAME}-x64.dmg" />
+    <move file="dist/${APP_NAME}.dmg" tofile="dist/${APP_TIMESTAMPED_NAME}.dmg" />
   </target>
 
 </project>
