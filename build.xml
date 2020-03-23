@@ -245,6 +245,7 @@
     <copy todir="dist/app/${APP_NAME_MAC}/Contents/MacOS" flatten="true">
       <fileset dir="resources/certutil-mac" />
     </copy>
+    <copy file="resources/libusb-1.0.dylib" todir="dist/app/${APP_NAME_MAC}/Contents/Java/Classes" />    
     <chmod perm="a+x" file="dist/app/${APP_NAME_MAC}/Contents/MacOS/${APP_NAME}" />
     <chmod perm="a+x" file="dist/app/${APP_NAME_MAC}/Contents/MacOS/certutilff" />
 
