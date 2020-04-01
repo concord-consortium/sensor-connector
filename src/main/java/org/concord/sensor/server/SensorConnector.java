@@ -29,9 +29,13 @@ import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 
-import org.apache.log4j.BasicConfigurator;
-import org.apache.log4j.Level;
-import org.apache.log4j.Logger;
+import java.io.IOException;
+import java.util.logging.Logger;
+import java.util.logging.FileHandler;
+import java.util.logging.Handler;
+import java.util.logging.Level;
+import java.util.logging.XMLFormatter;
+import java.util.logging.SimpleFormatter;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.eclipse.jetty.server.Connector;
 import org.eclipse.jetty.server.Server;
@@ -52,34 +56,59 @@ public class SensorConnector extends JFrame
 	// period of time since last active data collection to be considered idle
 	static final double DATA_COLLECTION_IDLE_TIMEOUT_SEC = 1800;
 
+	private static final Logger logger = Logger.getLogger("org.concord.sensor");
+
 	private static Server server = null;
 	public static void main( String[] args ) throws Exception
     {
-		BasicConfigurator.configure();
-		Logger.getLogger("org.concord.sensor").setLevel(Level.ERROR);
-		
+		// turn on logging via command line arguments
+		// "-l" or "-log" to start logging
+		// "xml" to change formatter to xml, "severe" to only log severe
+		if (args.length > 0) {
+			if (args[0].equalsIgnoreCase("-l") || args[0].equalsIgnoreCase("-log")) {
+				boolean useXMLFormatter = false;
+				boolean severeLoggingLevel = false;
+				for (String str : args) {
+					if (str.equalsIgnoreCase("xml")) {
+						useXMLFormatter = true;
+					}
+					if (str.equalsIgnoreCase("severe")) {
+						severeLoggingLevel = true;
+					}
+				}
+				try {
+					FileHandler fileHandler = new FileHandler("%h/Sensor-Connector-Activity%u.log", 50000, 1);
+					fileHandler.setFormatter(useXMLFormatter ? new XMLFormatter() : new SimpleFormatter());
+					fileHandler.setLevel(severeLoggingLevel ? Level.SEVERE : Level.INFO);
+					logger.addHandler(fileHandler);
+				} catch (IOException exception) {
+
+				}
+			}
+		}
+
 		if (isMac()) {
 			Security.addProvider(new BouncyCastleProvider());
 		}
 
     	final SensorHandler handler = new SensorHandler();
-    	
+
     	server = new Server();
 
 		SslContextFactory sslContextFactory = new SslContextFactory(SensorConnector.class.getResource("/server.jks").toExternalForm());
 		sslContextFactory.setKeyStorePassword("concord");
-    	
+
     	SocketConnector httpConnector = new SocketConnector();
     	SslSocketConnector httpsConnector = new SslSocketConnector(sslContextFactory);
-    	
+
     	// 11180 seems unassigned, high enough to not be privileged
     	// Use 11181 for HTTPS
     	httpConnector.setPort(11180);
     	httpsConnector.setPort(11181);
-    	
+
     	server.setConnectors(new Connector[] { httpConnector, httpsConnector });
 		server.setHandler(handler);
-    	
+
     	// Attach only to localhost (for now), to avoid any firewall popups
     	String[] hosts = new String[] {"127.0.0.1", "localhost"};
     	for (String host : hosts) {
@@ -92,7 +121,7 @@ public class SensorConnector extends JFrame
 	        	System.err.println("Ports 11180,11181 already in use on " + host);
 	        }
     	}
-    	
+
     	if (!server.isStarted()) {
     		// we were unable to bind to a port, most likely.
         	handler.shutdown();
@@ -101,9 +130,9 @@ public class SensorConnector extends JFrame
     	}
 
     	handler.init();
-        
+
         InfoFrame infoFrame = new InfoFrame(handler);
-        
+
         // Minimize to tray (Windows)/title bar (OS X) after starting
     	String exitText = isMac() ? MAC_EXIT_TEXT : WIN_EXIT_TEXT;
     	infoFrame.iconify("The sensor connector is running in the background. " + exitText, TrayIcon.MessageType.INFO);
@@ -124,7 +153,7 @@ public class SensorConnector extends JFrame
 				}
 			}
 		}, 0, 5000);
-		
+
     	Runtime.getRuntime().addShutdownHook(new Thread() {
     	    public void run() {
     	    	try {
@@ -200,10 +229,10 @@ class InfoFrame extends JFrame {
 		setVisible(false);
 		setupBehavior();
 		setupTray();
-		
+
 		setupContent();
 	}
-	
+
 	public void deiconify() {
 		setExtendedState(JFrame.NORMAL);
     	setVisible(true);
@@ -215,10 +244,10 @@ class InfoFrame extends JFrame {
 		toggleMenuItems(false);
     	dispatchEvent(new WindowEvent(this, WindowEvent.WINDOW_CLOSING));
 	}
-	
+
 	public void iconify(String message, TrayIcon.MessageType messageType) {
 		iconify();
-		
+
 		trayIcon.displayMessage(null, message, messageType);
 	}
 
@@ -228,7 +257,7 @@ class InfoFrame extends JFrame {
 
 		final JPanel panel = new JPanel(new GridBagLayout());
 		panel.setBorder(BorderFactory.createEmptyBorder(2,2,2,2));
-		
+
 		GridBagConstraints leftCol = new GridBagConstraints();
 		leftCol.gridx = 0;
 		leftCol.gridy = GridBagConstraints.RELATIVE;
@@ -236,7 +265,7 @@ class InfoFrame extends JFrame {
 		leftCol.fill = GridBagConstraints.HORIZONTAL;
 		leftCol.ipadx = 2;
 		leftCol.ipady = 2;
-		
+
 		GridBagConstraints rightCol = new GridBagConstraints();
 		rightCol.gridx = 1;
 		rightCol.gridy = GridBagConstraints.RELATIVE;
@@ -244,13 +273,13 @@ class InfoFrame extends JFrame {
 		rightCol.fill = GridBagConstraints.HORIZONTAL;
 		rightCol.ipadx = 2;
 		rightCol.ipady = 2;
-		
+
 		JLabel versionLabel = new JLabel("Version: ");
 		JLabel statusLabel = new JLabel("Status: ");
 		JLabel interfaceLabel = new JLabel("Connected interface: ");
 		JLabel unitsLabel = new JLabel("Units: ");
 		JLabel readingLabel = new JLabel("Current reading: ");
-		
+
 		final JLabel versionValue = new JLabel(SensorConnector.readDetailedVersionString());
 		final JLabel statusValue = new JLabel(handler.getCurrentState());
 		final JLabel interfaceValue = new JLabel("");
@@ -262,19 +291,19 @@ class InfoFrame extends JFrame {
 
 		panel.add(statusLabel, leftCol);
 		panel.add(statusValue, rightCol);
-		
+
 		panel.add(interfaceLabel, leftCol);
 		panel.add(interfaceValue, rightCol);
-		
+
 		panel.add(unitsLabel, leftCol);
 		panel.add(unitsValue, rightCol);
-		
+
 		panel.add(readingLabel, leftCol);
 		panel.add(readingValue, rightCol);
-		
+
 		getContentPane().add(panel, BorderLayout.CENTER);
 		pack();
-		
+
 		Timer t = new Timer();
 		t.scheduleAtFixedRate(new TimerTask() {
 			private String join(float[] values) {
@@ -288,7 +317,7 @@ class InfoFrame extends JFrame {
 				str = str.substring(0, str.length() - 2);
 				return str;
 			}
-			
+
 			private String join(Object[] values) {
 				String str = "";
 				if (values.length == 0) { return str; }
@@ -309,26 +338,26 @@ class InfoFrame extends JFrame {
 				try {
 					// Update the status, interface, last polled values, units
 					interfaceValue.setText(handler.getCurrentInterface());
-					
+
 					statusValue.setText(handler.getCurrentState());
-					
+
 					String[] units = handler.getUnits();
 					String unit = units.length > 1
 									? join(Arrays.copyOfRange(units, 1, units.length))	// strip off the first value, which is the time column
 									: "";
 					unitsValue.setText(unit);
-					
+
 					float[] lastPolledData = handler.getLastPolledData();
 					String reading = lastPolledData.length > 1
 										? join(Arrays.copyOfRange(lastPolledData, 1, lastPolledData.length))	// strip off the first value, which is the time column
 										: "";
 					readingValue.setText(reading);
-					
+
 					pack();
 					panel.revalidate();
 					panel.repaint();
 				} catch (Exception e) {
-					logger.error("Problem updating status window.", e);
+					logger.severe("Problem updating status window.");
 				}
 			}
 		}, 0, 500);
@@ -344,7 +373,7 @@ class InfoFrame extends JFrame {
 
 			showItem = new MenuItem("Show");
 			hideItem = new MenuItem("Hide");
-			
+
 			showItem.addActionListener(new ActionListener() {
 				@Override
 				public void actionPerformed(ActionEvent arg0) {
@@ -357,12 +386,12 @@ class InfoFrame extends JFrame {
 					iconify();
 				}
 			});
-			
+
 			popup.add(showItem);
 			popup.add(hideItem);
-			
+
 			hideItem.setEnabled(false);
-			
+
 			MenuItem exitItem = new MenuItem("Exit");
 			exitItem.addActionListener(new ActionListener() {
 				public void actionPerformed(ActionEvent e) {
@@ -383,7 +412,7 @@ class InfoFrame extends JFrame {
 
 	private void setupBehavior() {
         setAlwaysOnTop(true);
-        
+
         // Minimize if the window frame close button is hit
         setDefaultCloseOperation(JFrame.HIDE_ON_CLOSE);
         setResizable(false);
@@ -409,7 +438,7 @@ class InfoFrame extends JFrame {
             }
         });
 	}
-	
+
 	private void toggleMenuItems(boolean isFrameShowing) {
 		showItem.setEnabled(!isFrameShowing);
 		hideItem.setEnabled(isFrameShowing);
