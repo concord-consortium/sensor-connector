@@ -69,8 +69,8 @@ public class SensorConnector extends JFrame
 		// turn on logging via command line arguments, always on when using a Mac
 		// use argument "-l" or "-log" to start logging
 		// use arguments "xml" to change formatter to xml and "severe" to only log severe
-		if (args.length > 0 || isMac()) {
-			if (args[0].equalsIgnoreCase("-l") || args[0].equalsIgnoreCase("-log") || isMac()) {
+		if (isMac() || args.length > 0) {
+			if (isMac() || args[0].equalsIgnoreCase("-l") || args[0].equalsIgnoreCase("-log")) {
 				fileLoggingEnabled = true;
 				boolean useXMLFormatter = false;
 				boolean severeLoggingLevel = false;
