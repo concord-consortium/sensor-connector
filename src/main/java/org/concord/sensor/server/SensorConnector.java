@@ -22,6 +22,7 @@ import java.util.Arrays;
 import java.util.Scanner;
 import java.util.Timer;
 import java.util.TimerTask;
+import java.util.HashMap;
 
 import javax.swing.BorderFactory;
 import javax.swing.JFrame;
@@ -29,6 +30,9 @@ import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 
+import java.lang.management.ManagementFactory;
+import java.lang.management.MemoryMXBean;
+import java.lang.management.MemoryUsage;
 import java.io.IOException;
 import java.util.logging.Logger;
 import java.util.logging.FileHandler;
@@ -57,15 +61,17 @@ public class SensorConnector extends JFrame
 	static final double DATA_COLLECTION_IDLE_TIMEOUT_SEC = 1800;
 
 	private static final Logger logger = Logger.getLogger("org.concord.sensor");
+	private static boolean fileLoggingEnabled = false;
 
 	private static Server server = null;
 	public static void main( String[] args ) throws Exception
-    {
+  {
 		// turn on logging via command line arguments
-		// "-l" or "-log" to start logging
-		// "xml" to change formatter to xml, "severe" to only log severe
+		// use argument "-l" or "-log" to start logging
+		// use arguments "xml" to change formatter to xml and "severe" to only log severe
 		if (args.length > 0) {
 			if (args[0].equalsIgnoreCase("-l") || args[0].equalsIgnoreCase("-log")) {
+				fileLoggingEnabled = true;
 				boolean useXMLFormatter = false;
 				boolean severeLoggingLevel = false;
 				for (String str : args) {
@@ -77,7 +83,7 @@ public class SensorConnector extends JFrame
 					}
 				}
 				try {
-					FileHandler fileHandler = new FileHandler("%h/Sensor-Connector-Activity%u.log", 50000, 1);
+					FileHandler fileHandler = new FileHandler("%h/Sensor-Connector-Activity%u.%g.log", 50000, 1);
 					fileHandler.setFormatter(useXMLFormatter ? new XMLFormatter() : new SimpleFormatter());
 					fileHandler.setLevel(severeLoggingLevel ? Level.SEVERE : Level.INFO);
 					logger.addHandler(fileHandler);
@@ -91,55 +97,55 @@ public class SensorConnector extends JFrame
 			Security.addProvider(new BouncyCastleProvider());
 		}
 
-    	final SensorHandler handler = new SensorHandler();
+		final SensorHandler handler = new SensorHandler();
 
-    	server = new Server();
+		server = new Server();
 
 		SslContextFactory sslContextFactory = new SslContextFactory(SensorConnector.class.getResource("/server.jks").toExternalForm());
 		sslContextFactory.setKeyStorePassword("concord");
 
-    	SocketConnector httpConnector = new SocketConnector();
-    	SslSocketConnector httpsConnector = new SslSocketConnector(sslContextFactory);
+		SocketConnector httpConnector = new SocketConnector();
+		SslSocketConnector httpsConnector = new SslSocketConnector(sslContextFactory);
 
-    	// 11180 seems unassigned, high enough to not be privileged
-    	// Use 11181 for HTTPS
-    	httpConnector.setPort(11180);
-    	httpsConnector.setPort(11181);
+		// 11180 seems unassigned, high enough to not be privileged
+		// Use 11181 for HTTPS
+		httpConnector.setPort(11180);
+		httpsConnector.setPort(11181);
 
-    	server.setConnectors(new Connector[] { httpConnector, httpsConnector });
+		server.setConnectors(new Connector[] { httpConnector, httpsConnector });
 		server.setHandler(handler);
 
-    	// Attach only to localhost (for now), to avoid any firewall popups
-    	String[] hosts = new String[] {"127.0.0.1", "localhost"};
-    	for (String host : hosts) {
-    		httpConnector.setHost(host);
-    		httpsConnector.setHost(host);
-	        try {
-	        	server.start();
-	        	break;
-	        } catch (Exception e) {
-	        	System.err.println("Ports 11180,11181 already in use on " + host);
-	        }
-    	}
+		// Attach only to localhost (for now), to avoid any firewall popups
+		String[] hosts = new String[] {"127.0.0.1", "localhost"};
+		for (String host : hosts) {
+			httpConnector.setHost(host);
+			httpsConnector.setHost(host);
+				try {
+					server.start();
+					break;
+				} catch (Exception e) {
+					System.err.println("Ports 11180,11181 already in use on " + host);
+				}
+		}
 
-    	if (!server.isStarted()) {
-    		// we were unable to bind to a port, most likely.
-        	handler.shutdown();
-        	JOptionPane.showMessageDialog(null, "The Sensor Connector appears to already be running.", "Sensor Connector", JOptionPane.ERROR_MESSAGE);
-        	System.exit(1);
-    	}
+		if (!server.isStarted()) {
+			// we were unable to bind to a port, most likely.
+				handler.shutdown();
+				JOptionPane.showMessageDialog(null, "The Sensor Connector appears to already be running.", "Sensor Connector", JOptionPane.ERROR_MESSAGE);
+				System.exit(1);
+		}
 
-    	handler.init();
+		handler.init();
 
-        InfoFrame infoFrame = new InfoFrame(handler);
+		InfoFrame infoFrame = new InfoFrame(handler);
 
-        // Minimize to tray (Windows)/title bar (OS X) after starting
-    	String exitText = isMac() ? MAC_EXIT_TEXT : WIN_EXIT_TEXT;
-    	infoFrame.iconify("The sensor connector is running in the background. " + exitText, TrayIcon.MessageType.INFO);
+		// Minimize to tray (Windows)/title bar (OS X) after starting
+		String exitText = isMac() ? MAC_EXIT_TEXT : WIN_EXIT_TEXT;
+		infoFrame.iconify("The sensor connector is running in the background. " + exitText, TrayIcon.MessageType.INFO);
 
-        // TODO Add status, sensor info to tray/title bar menu or tooltip?
+		// TODO Add status, sensor info to tray/title bar menu or tooltip?
 
-        // Exit the application if we've been idle for a while
+		// Exit the application if we've been idle for a while
 		Timer t = new Timer();
 		t.scheduleAtFixedRate(new TimerTask() {
 			@Override
@@ -151,20 +157,39 @@ public class SensorConnector extends JFrame
 					(handler.getTimeSinceCollection() >= DATA_COLLECTION_IDLE_TIMEOUT_SEC)) {
 					System.exit(0);
 				}
+				if (fileLoggingEnabled) {
+					logger.info("Memory Usage: " + readMemoryUsage());
+				}
 			}
 		}, 0, 5000);
 
-    	Runtime.getRuntime().addShutdownHook(new Thread() {
-    	    public void run() {
-    	    	try {
-					server.stop();
-    	    		handler.shutdown();
-				} catch (Exception e) {
-					e.printStackTrace();
+		Runtime.getRuntime().addShutdownHook(new Thread() {
+				public void run() {
+					try {
+				server.stop();
+						handler.shutdown();
+			} catch (Exception e) {
+				e.printStackTrace();
+			}
 				}
-    	    }
-    	});
-    }
+		});
+	}
+
+	static String readMemoryUsage() {
+		HashMap<String, String> memoryMap = new HashMap<String, String>();
+		MemoryMXBean memBean = ManagementFactory.getMemoryMXBean();
+		MemoryUsage memHeapUsage = memBean.getHeapMemoryUsage();
+		MemoryUsage nonHeapUsage = memBean.getNonHeapMemoryUsage();
+		memoryMap.put("heapInit", String.valueOf(memHeapUsage.getInit()));
+		memoryMap.put("heapMax", String.valueOf(memHeapUsage.getMax()));
+		memoryMap.put("heapCommit", String.valueOf(memHeapUsage.getCommitted()));
+		memoryMap.put("heapUsed", String.valueOf(memHeapUsage.getUsed()));
+		memoryMap.put("nonHeapInit", String.valueOf(nonHeapUsage.getInit()));
+		memoryMap.put("nonHeapMax", String.valueOf(nonHeapUsage.getMax()));
+		memoryMap.put("nonHeapCommit", String.valueOf(nonHeapUsage.getCommitted()));
+		memoryMap.put("nonHeapUsed", String.valueOf(nonHeapUsage.getUsed()));
+		return memoryMap.toString();
+	}
 
 	static boolean isMac() {
 		return System.getProperty("os.name").toLowerCase().startsWith("mac");
@@ -411,32 +436,32 @@ class InfoFrame extends JFrame {
 	}
 
 	private void setupBehavior() {
-        setAlwaysOnTop(true);
+		setAlwaysOnTop(true);
 
-        // Minimize if the window frame close button is hit
-        setDefaultCloseOperation(JFrame.HIDE_ON_CLOSE);
-        setResizable(false);
-        addWindowStateListener(new WindowAdapter() {
-        	@Override
-        	public void windowStateChanged(WindowEvent e) {
-        		if (e.getNewState() == JFrame.ICONIFIED) {
-        			iconify(); // FIXME This doesn't hide the dock window on OS X...
-        		} else if (e.getNewState() == JFrame.NORMAL) {
-        			deiconify();
-        		}
-        	}
-        });
-        addWindowListener(new WindowAdapter() {
-        	@Override
-            public void windowClosing(WindowEvent e) {
-        		if (!locallyDispatchedClose) {
-        			toggleMenuItems(false);
-        	    	String exitText = SensorConnector.isMac() ? SensorConnector.MAC_EXIT_TEXT : SensorConnector.WIN_EXIT_TEXT;
-        			trayIcon.displayMessage(null, "The sensor connector is still running. " + exitText, TrayIcon.MessageType.INFO);
-        		}
-        		locallyDispatchedClose = false;
-            }
-        });
+		// Minimize if the window frame close button is hit
+		setDefaultCloseOperation(JFrame.HIDE_ON_CLOSE);
+		setResizable(false);
+		addWindowStateListener(new WindowAdapter() {
+			@Override
+			public void windowStateChanged(WindowEvent e) {
+				if (e.getNewState() == JFrame.ICONIFIED) {
+					iconify(); // FIXME This doesn't hide the dock window on OS X...
+				} else if (e.getNewState() == JFrame.NORMAL) {
+					deiconify();
+				}
+			}
+		});
+		addWindowListener(new WindowAdapter() {
+			@Override
+				public void windowClosing(WindowEvent e) {
+				if (!locallyDispatchedClose) {
+					toggleMenuItems(false);
+						String exitText = SensorConnector.isMac() ? SensorConnector.MAC_EXIT_TEXT : SensorConnector.WIN_EXIT_TEXT;
+					trayIcon.displayMessage(null, "The sensor connector is still running. " + exitText, TrayIcon.MessageType.INFO);
+				}
+				locallyDispatchedClose = false;
+				}
+		});
 	}
 
 	private void toggleMenuItems(boolean isFrameShowing) {

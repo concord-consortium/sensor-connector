@@ -91,6 +91,7 @@ public class SensorStateManager {
 			dispatcher.put(new StartEvent());
 		} catch (InterruptedException e) {
 			e.printStackTrace();
+			logger.severe("SensorStateManager start exception!");
 		}
 	}
 
@@ -99,6 +100,7 @@ public class SensorStateManager {
 			dispatcher.put(new StopEvent());
 		} catch (InterruptedException e) {
 			e.printStackTrace();
+			logger.severe("SensorStateManager stop exception!");
 		}
 	}
 
@@ -107,6 +109,7 @@ public class SensorStateManager {
 			dispatcher.put(new ConnectEvent());
 		} catch (InterruptedException e) {
 			e.printStackTrace();
+			logger.severe("SensorStateManager connect exception!");
 		}
 	}
 
@@ -115,6 +118,7 @@ public class SensorStateManager {
 			dispatcher.put(new DisconnectEvent());
 		} catch (InterruptedException e) {
 			e.printStackTrace();
+			logger.severe("SensorStateManager disconnect exception!");
 		}
 	}
 
@@ -124,8 +128,10 @@ public class SensorStateManager {
 			stateMachine.applyEvent(new TerminateEvent());
 		} catch (InterruptedException e) {
 			e.printStackTrace();
+			logger.severe("SensorStateManager terminate exception!");
 		} catch (FiniteStateException e) {
 			e.printStackTrace();
+			logger.severe("SensorStateManager terminate exception!");
 		}
 	}
 
@@ -239,6 +245,7 @@ public class SensorStateManager {
 				try {
 					task.get();
 				} catch (Exception e) {
+					logger.severe("initializeActions exception!");
 					e.printStackTrace();
 				}
 			}
@@ -272,6 +279,7 @@ public class SensorStateManager {
 			public void doAction(Event message, Entity entity, Transition transition, int actionType) throws TransitionRollbackException, TransitionFailureException, InterruptedException {
 				Runnable r = new Runnable() {
 					public void run() {
+						logger.info("In SensorStateManager doAction run" + Thread.currentThread().getName());
 						// Scan to see which devices are connected, and then connect with that device type
 						currentInterfaceType = NULL_INTERFACE_TYPE;
 						try {
@@ -299,10 +307,12 @@ public class SensorStateManager {
 						if (!deviceIsAttached) {
 							// try re-opening the device
 							try {
+								logger.info("Re-opening device: " + Thread.currentThread().getName());
 								device.close();
 								device.open(null);
 								deviceIsAttached = device.isAttached();
 							} catch (Exception e) {
+								logger.severe("Device connection exception!");
 								deviceIsAttached = false;
 							}
 							// we're still not attached. Error.
@@ -323,6 +333,7 @@ public class SensorStateManager {
 		actions.put("disconnect", new Action() {
 			@Override
 			public void doAction(Event message, Entity entity, Transition transition, int actionType) throws TransitionRollbackException, TransitionFailureException, InterruptedException {
+				logger.info("In SensorStateManager doAction disconnect" + Thread.currentThread().getName());
 				// make sure we've destroyed any prior sessions
 				if (device != null) {
 					Runnable r = new Runnable() {
@@ -340,6 +351,7 @@ public class SensorStateManager {
 		actions.put("startPolling", new Action() {
 			@Override
 			public void doAction(Event message, Entity entity, Transition transition, int actionType) throws TransitionRollbackException, TransitionFailureException, InterruptedException {
+				logger.info("In SensorStateManager doAction startPolling" + Thread.currentThread().getName());
 				datasink.startNewCollection(getDeviceConfig());
 
 				Runnable r2 = new Runnable() {
@@ -381,6 +393,7 @@ public class SensorStateManager {
 		actions.put("stopPolling", new Action() {
 			@Override
 			public void doAction(Event message, Entity entity, Transition transition, int actionType) throws TransitionRollbackException, TransitionFailureException, InterruptedException {
+				logger.info("In SensorStateManager doAction stopPolling" + Thread.currentThread().getName());
 				collectionTask.cancel(false);
 			}
 		});
@@ -388,6 +401,7 @@ public class SensorStateManager {
 		actions.put("startCollecting", new Action() {
 			@Override
 			public void doAction(final Event message, final Entity entity, final Transition transition, final int actionType) throws TransitionRollbackException, TransitionFailureException, InterruptedException {
+				logger.info("In SensorStateManager doAction startCollecting" + Thread.currentThread().getName());
 				Runnable start = new Runnable() {
 					public void run() {
 						ExperimentConfig config = getDeviceConfig();
@@ -399,6 +413,7 @@ public class SensorStateManager {
 							try {
 								dispatcher.putOutOfBand(new ErrorEvent(e1.getMessage()));
 							} catch (InterruptedException e) {
+								logger.severe("Run exception in dispatcher.putOutOfBand!");
 								e.printStackTrace();
 							}
 							return;
@@ -417,6 +432,7 @@ public class SensorStateManager {
 								try {
 									dispatcher.putOutOfBand(new ErrorEvent(e1.getMessage()));
 								} catch (InterruptedException e2) {
+									logger.severe("Run exception in dispatcher.putOutOfBand!");
 									e2.printStackTrace();
 								}
 							}
@@ -426,6 +442,7 @@ public class SensorStateManager {
 								try {
 									dispatcher.putOutOfBand(new ErrorEvent("No sensors attached! Can't collect data."));
 								} catch (InterruptedException e2) {
+									logger.severe("Run exception in dispatcher.putOutOfBand!");
 									e2.printStackTrace();
 								}
 								return;
@@ -488,6 +505,7 @@ public class SensorStateManager {
 						} else {
 							// we should send a notification here that something went wrong
 							System.err.println("error starting the device");
+							logger.severe("error starting the device!");
 							try {
 								dispatcher.put(new StopEvent());
 							} catch (InterruptedException e) {
@@ -505,6 +523,7 @@ public class SensorStateManager {
 		actions.put("stopCollecting", new Action() {
 			@Override
 			public void doAction(Event message, Entity entity, Transition transition, int actionType) throws TransitionRollbackException, TransitionFailureException, InterruptedException {
+				logger.info("In SensorStateManager doAction stopCollecting" + Thread.currentThread().getName());
 				if (collectionTask != null && !collectionTask.isDone()) {
 					collectionTask.cancel(false);
 				}
@@ -528,6 +547,7 @@ public class SensorStateManager {
 		actions.put("terminate", new Action() {
 			@Override
 			public void doAction(Event message, Entity entity, Transition transition, int actionType) throws TransitionRollbackException, TransitionFailureException, InterruptedException {
+				logger.info("In SensorStateManager doAction terminate" + Thread.currentThread().getName());
 				Runnable r = new Runnable() {
 					public void run() {
 						if (device != null) {
@@ -543,6 +563,7 @@ public class SensorStateManager {
 					executor.awaitTermination(5, TimeUnit.SECONDS);
 					System.err.println("Shutdown completed. All tasks terminated: " + executor.isTerminated());
 				} catch (InterruptedException e) {
+					logger.severe("Terminate exception!");
 					e.printStackTrace();
 				}
 				executor = null;
@@ -557,6 +578,7 @@ public class SensorStateManager {
 	}
 
 	private ExperimentRequest generateExperimentRequest(ExperimentConfig config) {
+		logger.info("In SensorStateManager generateExperimentRequest" + Thread.currentThread().getName());
 		if (config == null) { throw new RuntimeException("Couldn't fetch config from device! Restarting..."); }
 
 		SensorRequest[] sensors = getSensorsFromCurrentConfig(config);
@@ -609,6 +631,7 @@ public class SensorStateManager {
 			public void run() {
 				ExperimentConfig expConfig = getDeviceConfig();
 				if (expConfig == null) {
+					logger.severe("Error polling channel values!");
 					throw new RuntimeException("Error polling channel values");
 				}
 				SensorConfig[] sensors = expConfig.getSensorConfigs();
@@ -619,12 +642,14 @@ public class SensorStateManager {
 					datasink.setLastPolledData(expConfig, channelValues);
 				}
 				else if (valueCount < 0) {
+					logger.severe("Error polling channel values!");
 					throw new RuntimeException("Error polling channel values");
 				}
 			}
 		};
 		if (! executeAndWait(r, 10)) {
 			// exception trying to read channel values
+			logger.severe("Error polling channel values!");
 			throw new RuntimeException("Error polling channel values.");
 		}
 	}
@@ -637,6 +662,7 @@ public class SensorStateManager {
 	private void readSingleValue() {
 		Runnable r = new Runnable() {
 			public void run() {
+				logger.info("Read single value: " + Thread.currentThread().getName());
 				// There's probably a more efficient way of doing this.
 				// GoIO devices, for instance, support one-shot data collection.
 				// Perhaps other devices do as well?
@@ -648,11 +674,13 @@ public class SensorStateManager {
 				if (device instanceof LabQuestSensorDevice && !device.isAttached()) {
 					// Something dramatic happened during configure. Bail.
 					// I've seen this when all sensors get unplugged from the LabQuest after getting opened with sensors plugged in.
+					logger.severe("Device is no longer attached!");
 					throw new RuntimeException("Device is no longer attached!");
 				}
 
 				SensorConfig[] sensorConfigs = actualConfig.getSensorConfigs();
 				if (sensorConfigs == null) {
+					logger.severe("No sensors attached to device!");
 					throw new RuntimeException("No sensors attached to device!");
 				}
 				numSensors = sensorConfigs.length;
