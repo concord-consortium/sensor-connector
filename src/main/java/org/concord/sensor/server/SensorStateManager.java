@@ -131,7 +131,7 @@ public class SensorStateManager {
 			logger.severe("SensorStateManager terminate exception!");
 		} catch (FiniteStateException e) {
 			e.printStackTrace();
-			logger.severe("SensorStateManager terminate exception!");
+			logger.severe("SensorStateManager terminate FiniteState exception!");
 		}
 	}
 
@@ -631,7 +631,7 @@ public class SensorStateManager {
 			public void run() {
 				ExperimentConfig expConfig = getDeviceConfig();
 				if (expConfig == null) {
-					logger.severe("Error polling channel values!");
+					logger.severe("Error polling channel values! [expConfig == null]");
 					throw new RuntimeException("Error polling channel values");
 				}
 				SensorConfig[] sensors = expConfig.getSensorConfigs();
@@ -642,14 +642,14 @@ public class SensorStateManager {
 					datasink.setLastPolledData(expConfig, channelValues);
 				}
 				else if (valueCount < 0) {
-					logger.severe("Error polling channel values!");
+					logger.severe("Error polling channel values! [valueCount < 0]");
 					throw new RuntimeException("Error polling channel values");
 				}
 			}
 		};
 		if (! executeAndWait(r, 10)) {
 			// exception trying to read channel values
-			logger.severe("Error polling channel values!");
+			logger.severe("Error polling channel values! [!executAndWait]");
 			throw new RuntimeException("Error polling channel values.");
 		}
 	}
