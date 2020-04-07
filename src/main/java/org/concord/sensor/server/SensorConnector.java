@@ -66,11 +66,11 @@ public class SensorConnector extends JFrame
 	private static Server server = null;
 	public static void main( String[] args ) throws Exception
   {
-		// turn on logging via command line arguments
+		// turn on logging via command line arguments, always on when using a Mac
 		// use argument "-l" or "-log" to start logging
 		// use arguments "xml" to change formatter to xml and "severe" to only log severe
-		if (args.length > 0) {
-			if (args[0].equalsIgnoreCase("-l") || args[0].equalsIgnoreCase("-log")) {
+		if (args.length > 0 || isMac()) {
+			if (args[0].equalsIgnoreCase("-l") || args[0].equalsIgnoreCase("-log") || isMac()) {
 				fileLoggingEnabled = true;
 				boolean useXMLFormatter = false;
 				boolean severeLoggingLevel = false;
@@ -83,7 +83,8 @@ public class SensorConnector extends JFrame
 					}
 				}
 				try {
-					FileHandler fileHandler = new FileHandler("%h/Sensor-Connector-Activity%u.%g.log", 50000, 1);
+					// allow for a max file size of 100 KB and a max of 10 rotated log files
+					FileHandler fileHandler = new FileHandler("%h/Sensor-Connector-Activity%u.%g.log", 100000, 10);
 					fileHandler.setFormatter(useXMLFormatter ? new XMLFormatter() : new SimpleFormatter());
 					fileHandler.setLevel(severeLoggingLevel ? Level.SEVERE : Level.INFO);
 					logger.addHandler(fileHandler);
