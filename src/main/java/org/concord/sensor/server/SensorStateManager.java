@@ -245,7 +245,7 @@ public class SensorStateManager {
 				try {
 					task.get();
 				} catch (Exception e) {
-					logger.severe("initializeActions exception!");
+					logger.severe("initializeActions exception! " + e.toString());
 					e.printStackTrace();
 				}
 			}
@@ -290,7 +290,7 @@ public class SensorStateManager {
 								currentInterfaceType = types[0];
 							}
 						} catch (UsbException e) {
-							logger.severe("Failed to enumerate USB devices!");
+							logger.severe("Failed to enumerate USB devices! " + e.toString());
 						}
 
 						if (currentInterfaceType == NULL_INTERFACE_TYPE) {
@@ -312,7 +312,7 @@ public class SensorStateManager {
 								device.open(null);
 								deviceIsAttached = device.isAttached();
 							} catch (Exception e) {
-								logger.severe("Device connection exception!");
+								logger.severe("Device connection exception! " + e.toString());
 								deviceIsAttached = false;
 							}
 							// we're still not attached. Error.
@@ -374,12 +374,12 @@ public class SensorStateManager {
 							lastConnectedTime = new Date();
 						} catch (Exception e) {
 							errorCount++;
-							logger.severe("Failed to read data from the device!");
+							logger.severe("Failed to read data from the device! " + e.toString());
 							if (errorCount > ALLOWED_ERRORS_BEFORE_DISCONNECT) {
 								try {
 									dispatcher.put(new DisconnectEvent());
 								} catch (InterruptedException e1) {
-									logger.severe("Failed to transition to DISCONNECTED!");
+									logger.severe("Failed to transition to DISCONNECTED! " + e1.toString());
 								}
 							}
 						}
@@ -413,7 +413,7 @@ public class SensorStateManager {
 							try {
 								dispatcher.putOutOfBand(new ErrorEvent(e1.getMessage()));
 							} catch (InterruptedException e) {
-								logger.severe("Run exception in dispatcher.putOutOfBand!");
+								logger.severe("Run exception in dispatcher.putOutOfBand! " + e.toString());
 								e.printStackTrace();
 							}
 							return;
@@ -432,7 +432,7 @@ public class SensorStateManager {
 								try {
 									dispatcher.putOutOfBand(new ErrorEvent(e1.getMessage()));
 								} catch (InterruptedException e2) {
-									logger.severe("Run exception in dispatcher.putOutOfBand!");
+									logger.severe("Run exception in dispatcher.putOutOfBand! " + e2.toString());
 									e2.printStackTrace();
 								}
 							}
@@ -442,7 +442,7 @@ public class SensorStateManager {
 								try {
 									dispatcher.putOutOfBand(new ErrorEvent("No sensors attached! Can't collect data."));
 								} catch (InterruptedException e2) {
-									logger.severe("Run exception in dispatcher.putOutOfBand!");
+									logger.severe("Run exception in dispatcher.putOutOfBand! " + e2.toString());
 									e2.printStackTrace();
 								}
 								return;
@@ -475,7 +475,7 @@ public class SensorStateManager {
 									}
 								} catch (Exception e) {
 									numErrors++;
-									logger.severe("Error reading data from device!");
+									logger.severe("Error reading data from device! " + e.toString());
 								}
 								if (numErrors >= MAX_READ_ERRORS) {
 									numErrors = 0;
@@ -563,7 +563,7 @@ public class SensorStateManager {
 					executor.awaitTermination(5, TimeUnit.SECONDS);
 					System.err.println("Shutdown completed. All tasks terminated: " + executor.isTerminated());
 				} catch (InterruptedException e) {
-					logger.severe("Terminate exception!");
+					logger.severe("Terminate exception! " + e.toString());
 					e.printStackTrace();
 				}
 				executor = null;
@@ -729,7 +729,7 @@ public class SensorStateManager {
 						}
 					} catch (Exception e) {
 						numErrors++;
-						logger.severe("Error reading data from device!");
+						logger.severe("Error reading data from device! " + e.toString());
 					}
 				}
 				if (numErrors >= MAX_READ_ERRORS) {
