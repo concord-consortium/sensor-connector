@@ -151,7 +151,7 @@ Previously, building the SensorConnector application required the use of a Conco
 git clone https://github.com/concord-consortium/sensor-projects.git
 cd sensor-projects
 mvn install
-``` 
+```
 
 ### Install Tungsten-FSM
 
@@ -264,3 +264,17 @@ The `mac-build.sh` script will build the 32-bit and 64-bit packages, setting the
 
 - Generate the new certificate keystore using the tools in the [ssl-ca](https://github.com/concord-consortium/ssl-ca) project.
 - Replace the existing keystore file: `src/main/resources/server.jks`
+
+## Logging
+
+### Running with file logging
+Sensor Connector can be launched with command line arguments to turn on file logging.  When file logging is enabled, a Sensor Connector log file is created that stores information which includes errors and exceptions, memory usage statistics, and a record of which internal functions were called.  When Sensor Connector is run from a command line, use the `-l` or `-log` argument to turn on log files.  Additionally, use the `xml` argument to switch from simple logging to XML formatted file logging and use the `severe` argument to set the log level to only log severe information such as errors and exceptions.
+
+### Running with file logging on Windows
+On Windows 10, if the 32 bit version of Sensor Connector is installed, then `sensorconnector.exe` (which is used to launch Sensor Connector from a command line and turn on logging) is typically installed in `C:\Program Files (x86)\SensorConnector`. If the 64 bit version of Sensor Connector is installed, then `sensorconnector.exe` is typically installed in `C:\Program Files\SensorConnector`.  To launch Sensor Connector with logging, open a command line, browse to the Sensor Connector installation folder containing `sensorconnector.exe` and run `sensorconnector.exe -log` (add additional arguments as needed such as `sensorconnector.exe -log xml severe`).
+
+### Running with file logging on OS X
+On OS X, Sensor Connector is installed in the `Applications` folder.  To launch Sensor Connector with logging open a terminal, browse to `Applications\SensorConnector.app\Contents\MacOS` and run `open SensorConnector -log` (add additional arguments as needed).
+
+### Log location
+Sensor Connector logs are named `Sensor-Connector-Activityu.g.log` (where `u` is a unique number to resolve naming conflicts and `g` is generation number to distinguish rotated logs).  For example, a typical Sensor Connector log file is named `Sensor-Connector-Activity0.0.log`.  A previous log may be overwritten when Sensor Connector is stopped and a new Sensor Connector instance is started.  Logs are stored in the `home` directory.  On modern Windows machines, the `home` directory is located at: `<root>\Users\<username>` (e.g., `C:\Users\ccuser`).  On OS X, the home directory is the user folder (e.g., `Users\ccuser`).
