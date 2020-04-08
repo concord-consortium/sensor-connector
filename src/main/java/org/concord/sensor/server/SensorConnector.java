@@ -61,38 +61,39 @@ public class SensorConnector extends JFrame
 	static final double DATA_COLLECTION_IDLE_TIMEOUT_SEC = 1800;
 
 	private static final Logger logger = Logger.getLogger("org.concord.sensor");
-	private static boolean fileLoggingEnabled = false;
+	private static boolean infoLoggingEnabled = false;
 
 	private static Server server = null;
 	public static void main( String[] args ) throws Exception
   {
-		// turn on logging via command line arguments, always on when using a Mac
-		// use argument "-l" or "-log" to start logging
-		// use arguments "xml" to change formatter to xml and "severe" to only log severe
-		if (isMac() || args.length > 0) {
-			if (isMac() || args[0].equalsIgnoreCase("-l") || args[0].equalsIgnoreCase("-log")) {
-				fileLoggingEnabled = true;
-				boolean useXMLFormatter = false;
-				boolean severeLoggingLevel = false;
-				for (String str : args) {
-					if (str.equalsIgnoreCase("xml")) {
-						useXMLFormatter = true;
-					}
-					if (str.equalsIgnoreCase("severe")) {
-						severeLoggingLevel = true;
-					}
+		// turn on logging via command line arguments
+		// use argument "-l" or "-log" to enable logging features
+		// use option "xml" to change formatter to xml
+		// use option "info" to only log all debug info, this feature is always enabled on Macs
+		boolean useXMLFormatter = false;
+		if (isMac()) {
+			infoLoggingEnabled = true;
+		}
+		if (args.length > 0 && (args[0].equalsIgnoreCase("-l") || args[0].equalsIgnoreCase("-log"))) {
+			for (String str : args) {
+				if (str.equalsIgnoreCase("xml")) {
+					useXMLFormatter = true;
 				}
-				try {
-					// allow for a max file size of 100 KB and a max of 10 rotated log files
-					FileHandler fileHandler = new FileHandler("%h/Sensor-Connector-Activity%u.%g.log", 100000, 10);
-					fileHandler.setFormatter(useXMLFormatter ? new XMLFormatter() : new SimpleFormatter());
-					fileHandler.setLevel(severeLoggingLevel ? Level.SEVERE : Level.INFO);
-					logger.addHandler(fileHandler);
-				} catch (IOException exception) {
-
+				if (str.equalsIgnoreCase("info")) {
+					infoLoggingEnabled = true;
 				}
 			}
 		}
+		try {
+			// allow for a max file size of 100 KB and a max of 10 rotated log files
+			FileHandler fileHandler = new FileHandler("%h/Sensor-Connector-Activity%u.%g.log", 100000, 10);
+			fileHandler.setFormatter(useXMLFormatter ? new XMLFormatter() : new SimpleFormatter());
+			fileHandler.setLevel(infoLoggingEnabled ? Level.INFO : Level.SEVERE);
+			logger.addHandler(fileHandler);
+		} catch (IOException exception) {
+
+		}
+
 
 		if (isMac()) {
 			Security.addProvider(new BouncyCastleProvider());
@@ -158,7 +159,7 @@ public class SensorConnector extends JFrame
 					(handler.getTimeSinceCollection() >= DATA_COLLECTION_IDLE_TIMEOUT_SEC)) {
 					System.exit(0);
 				}
-				if (fileLoggingEnabled) {
+				if (infoLoggingEnabled) {
 					logger.info("Memory Usage: " + readMemoryUsage());
 				}
 			}
