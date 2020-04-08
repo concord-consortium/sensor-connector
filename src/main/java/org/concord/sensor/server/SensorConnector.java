@@ -22,6 +22,7 @@ import java.util.Arrays;
 import java.util.Scanner;
 import java.util.Timer;
 import java.util.TimerTask;
+import java.util.HashMap;
 
 import javax.swing.BorderFactory;
 import javax.swing.JFrame;
@@ -29,9 +30,16 @@ import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 
-import org.apache.log4j.BasicConfigurator;
-import org.apache.log4j.Level;
-import org.apache.log4j.Logger;
+import java.lang.management.ManagementFactory;
+import java.lang.management.MemoryMXBean;
+import java.lang.management.MemoryUsage;
+import java.io.IOException;
+import java.util.logging.Logger;
+import java.util.logging.FileHandler;
+import java.util.logging.Handler;
+import java.util.logging.Level;
+import java.util.logging.XMLFormatter;
+import java.util.logging.SimpleFormatter;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.eclipse.jetty.server.Connector;
 import org.eclipse.jetty.server.Server;
@@ -52,65 +60,94 @@ public class SensorConnector extends JFrame
 	// period of time since last active data collection to be considered idle
 	static final double DATA_COLLECTION_IDLE_TIMEOUT_SEC = 1800;
 
+	private static final Logger logger = Logger.getLogger("org.concord.sensor");
+	private static boolean infoLoggingEnabled = false;
+
 	private static Server server = null;
 	public static void main( String[] args ) throws Exception
-    {
-		BasicConfigurator.configure();
-		Logger.getLogger("org.concord.sensor").setLevel(Level.ERROR);
-		
+  {
+		// turn on logging via command line arguments
+		// use argument "-l" or "-log" to enable logging features
+		// use option "xml" to change formatter to xml
+		// use option "info" to only log all debug info, this feature is always enabled on Macs
+		boolean useXMLFormatter = false;
+		if (isMac()) {
+			infoLoggingEnabled = true;
+		}
+		if (args.length > 0 && (args[0].equalsIgnoreCase("-l") || args[0].equalsIgnoreCase("-log"))) {
+			for (String str : args) {
+				if (str.equalsIgnoreCase("xml")) {
+					useXMLFormatter = true;
+				}
+				if (str.equalsIgnoreCase("info")) {
+					infoLoggingEnabled = true;
+				}
+			}
+		}
+		try {
+			// allow for a max file size of 100 KB and a max of 10 rotated log files
+			FileHandler fileHandler = new FileHandler("%h/Sensor-Connector-Activity%u.%g.log", 100000, 10);
+			fileHandler.setFormatter(useXMLFormatter ? new XMLFormatter() : new SimpleFormatter());
+			fileHandler.setLevel(infoLoggingEnabled ? Level.INFO : Level.SEVERE);
+			logger.addHandler(fileHandler);
+		} catch (IOException exception) {
+
+		}
+
+
 		if (isMac()) {
 			Security.addProvider(new BouncyCastleProvider());
 		}
 
-    	final SensorHandler handler = new SensorHandler();
-    	
-    	server = new Server();
+		final SensorHandler handler = new SensorHandler();
+
+		server = new Server();
 
 		SslContextFactory sslContextFactory = new SslContextFactory(SensorConnector.class.getResource("/server.jks").toExternalForm());
 		sslContextFactory.setKeyStorePassword("concord");
-    	
-    	SocketConnector httpConnector = new SocketConnector();
-    	SslSocketConnector httpsConnector = new SslSocketConnector(sslContextFactory);
-    	
-    	// 11180 seems unassigned, high enough to not be privileged
-    	// Use 11181 for HTTPS
-    	httpConnector.setPort(11180);
-    	httpsConnector.setPort(11181);
-    	
-    	server.setConnectors(new Connector[] { httpConnector, httpsConnector });
+
+		SocketConnector httpConnector = new SocketConnector();
+		SslSocketConnector httpsConnector = new SslSocketConnector(sslContextFactory);
+
+		// 11180 seems unassigned, high enough to not be privileged
+		// Use 11181 for HTTPS
+		httpConnector.setPort(11180);
+		httpsConnector.setPort(11181);
+
+		server.setConnectors(new Connector[] { httpConnector, httpsConnector });
 		server.setHandler(handler);
-    	
-    	// Attach only to localhost (for now), to avoid any firewall popups
-    	String[] hosts = new String[] {"127.0.0.1", "localhost"};
-    	for (String host : hosts) {
-    		httpConnector.setHost(host);
-    		httpsConnector.setHost(host);
-	        try {
-	        	server.start();
-	        	break;
-	        } catch (Exception e) {
-	        	System.err.println("Ports 11180,11181 already in use on " + host);
-	        }
-    	}
-    	
-    	if (!server.isStarted()) {
-    		// we were unable to bind to a port, most likely.
-        	handler.shutdown();
-        	JOptionPane.showMessageDialog(null, "The Sensor Connector appears to already be running.", "Sensor Connector", JOptionPane.ERROR_MESSAGE);
-        	System.exit(1);
-    	}
 
-    	handler.init();
-        
-        InfoFrame infoFrame = new InfoFrame(handler);
-        
-        // Minimize to tray (Windows)/title bar (OS X) after starting
-    	String exitText = isMac() ? MAC_EXIT_TEXT : WIN_EXIT_TEXT;
-    	infoFrame.iconify("The sensor connector is running in the background. " + exitText, TrayIcon.MessageType.INFO);
+		// Attach only to localhost (for now), to avoid any firewall popups
+		String[] hosts = new String[] {"127.0.0.1", "localhost"};
+		for (String host : hosts) {
+			httpConnector.setHost(host);
+			httpsConnector.setHost(host);
+				try {
+					server.start();
+					break;
+				} catch (Exception e) {
+					System.err.println("Ports 11180,11181 already in use on " + host);
+				}
+		}
 
-        // TODO Add status, sensor info to tray/title bar menu or tooltip?
+		if (!server.isStarted()) {
+			// we were unable to bind to a port, most likely.
+				handler.shutdown();
+				JOptionPane.showMessageDialog(null, "The Sensor Connector appears to already be running.", "Sensor Connector", JOptionPane.ERROR_MESSAGE);
+				System.exit(1);
+		}
 
-        // Exit the application if we've been idle for a while
+		handler.init();
+
+		InfoFrame infoFrame = new InfoFrame(handler);
+
+		// Minimize to tray (Windows)/title bar (OS X) after starting
+		String exitText = isMac() ? MAC_EXIT_TEXT : WIN_EXIT_TEXT;
+		infoFrame.iconify("The sensor connector is running in the background. " + exitText, TrayIcon.MessageType.INFO);
+
+		// TODO Add status, sensor info to tray/title bar menu or tooltip?
+
+		// Exit the application if we've been idle for a while
 		Timer t = new Timer();
 		t.scheduleAtFixedRate(new TimerTask() {
 			@Override
@@ -122,20 +159,39 @@ public class SensorConnector extends JFrame
 					(handler.getTimeSinceCollection() >= DATA_COLLECTION_IDLE_TIMEOUT_SEC)) {
 					System.exit(0);
 				}
+				if (infoLoggingEnabled) {
+					logger.info("Memory Usage: " + readMemoryUsage());
+				}
 			}
 		}, 0, 5000);
-		
-    	Runtime.getRuntime().addShutdownHook(new Thread() {
-    	    public void run() {
-    	    	try {
-					server.stop();
-    	    		handler.shutdown();
-				} catch (Exception e) {
-					e.printStackTrace();
+
+		Runtime.getRuntime().addShutdownHook(new Thread() {
+				public void run() {
+					try {
+				server.stop();
+						handler.shutdown();
+			} catch (Exception e) {
+				e.printStackTrace();
+			}
 				}
-    	    }
-    	});
-    }
+		});
+	}
+
+	static String readMemoryUsage() {
+		HashMap<String, String> memoryMap = new HashMap<String, String>();
+		MemoryMXBean memBean = ManagementFactory.getMemoryMXBean();
+		MemoryUsage memHeapUsage = memBean.getHeapMemoryUsage();
+		MemoryUsage nonHeapUsage = memBean.getNonHeapMemoryUsage();
+		memoryMap.put("heapInit", String.valueOf(memHeapUsage.getInit()));
+		memoryMap.put("heapMax", String.valueOf(memHeapUsage.getMax()));
+		memoryMap.put("heapCommit", String.valueOf(memHeapUsage.getCommitted()));
+		memoryMap.put("heapUsed", String.valueOf(memHeapUsage.getUsed()));
+		memoryMap.put("nonHeapInit", String.valueOf(nonHeapUsage.getInit()));
+		memoryMap.put("nonHeapMax", String.valueOf(nonHeapUsage.getMax()));
+		memoryMap.put("nonHeapCommit", String.valueOf(nonHeapUsage.getCommitted()));
+		memoryMap.put("nonHeapUsed", String.valueOf(nonHeapUsage.getUsed()));
+		return memoryMap.toString();
+	}
 
 	static boolean isMac() {
 		return System.getProperty("os.name").toLowerCase().startsWith("mac");
@@ -200,10 +256,10 @@ class InfoFrame extends JFrame {
 		setVisible(false);
 		setupBehavior();
 		setupTray();
-		
+
 		setupContent();
 	}
-	
+
 	public void deiconify() {
 		setExtendedState(JFrame.NORMAL);
     	setVisible(true);
@@ -215,10 +271,10 @@ class InfoFrame extends JFrame {
 		toggleMenuItems(false);
     	dispatchEvent(new WindowEvent(this, WindowEvent.WINDOW_CLOSING));
 	}
-	
+
 	public void iconify(String message, TrayIcon.MessageType messageType) {
 		iconify();
-		
+
 		trayIcon.displayMessage(null, message, messageType);
 	}
 
@@ -228,7 +284,7 @@ class InfoFrame extends JFrame {
 
 		final JPanel panel = new JPanel(new GridBagLayout());
 		panel.setBorder(BorderFactory.createEmptyBorder(2,2,2,2));
-		
+
 		GridBagConstraints leftCol = new GridBagConstraints();
 		leftCol.gridx = 0;
 		leftCol.gridy = GridBagConstraints.RELATIVE;
@@ -236,7 +292,7 @@ class InfoFrame extends JFrame {
 		leftCol.fill = GridBagConstraints.HORIZONTAL;
 		leftCol.ipadx = 2;
 		leftCol.ipady = 2;
-		
+
 		GridBagConstraints rightCol = new GridBagConstraints();
 		rightCol.gridx = 1;
 		rightCol.gridy = GridBagConstraints.RELATIVE;
@@ -244,13 +300,13 @@ class InfoFrame extends JFrame {
 		rightCol.fill = GridBagConstraints.HORIZONTAL;
 		rightCol.ipadx = 2;
 		rightCol.ipady = 2;
-		
+
 		JLabel versionLabel = new JLabel("Version: ");
 		JLabel statusLabel = new JLabel("Status: ");
 		JLabel interfaceLabel = new JLabel("Connected interface: ");
 		JLabel unitsLabel = new JLabel("Units: ");
 		JLabel readingLabel = new JLabel("Current reading: ");
-		
+
 		final JLabel versionValue = new JLabel(SensorConnector.readDetailedVersionString());
 		final JLabel statusValue = new JLabel(handler.getCurrentState());
 		final JLabel interfaceValue = new JLabel("");
@@ -262,19 +318,19 @@ class InfoFrame extends JFrame {
 
 		panel.add(statusLabel, leftCol);
 		panel.add(statusValue, rightCol);
-		
+
 		panel.add(interfaceLabel, leftCol);
 		panel.add(interfaceValue, rightCol);
-		
+
 		panel.add(unitsLabel, leftCol);
 		panel.add(unitsValue, rightCol);
-		
+
 		panel.add(readingLabel, leftCol);
 		panel.add(readingValue, rightCol);
-		
+
 		getContentPane().add(panel, BorderLayout.CENTER);
 		pack();
-		
+
 		Timer t = new Timer();
 		t.scheduleAtFixedRate(new TimerTask() {
 			private String join(float[] values) {
@@ -288,7 +344,7 @@ class InfoFrame extends JFrame {
 				str = str.substring(0, str.length() - 2);
 				return str;
 			}
-			
+
 			private String join(Object[] values) {
 				String str = "";
 				if (values.length == 0) { return str; }
@@ -309,26 +365,26 @@ class InfoFrame extends JFrame {
 				try {
 					// Update the status, interface, last polled values, units
 					interfaceValue.setText(handler.getCurrentInterface());
-					
+
 					statusValue.setText(handler.getCurrentState());
-					
+
 					String[] units = handler.getUnits();
 					String unit = units.length > 1
 									? join(Arrays.copyOfRange(units, 1, units.length))	// strip off the first value, which is the time column
 									: "";
 					unitsValue.setText(unit);
-					
+
 					float[] lastPolledData = handler.getLastPolledData();
 					String reading = lastPolledData.length > 1
 										? join(Arrays.copyOfRange(lastPolledData, 1, lastPolledData.length))	// strip off the first value, which is the time column
 										: "";
 					readingValue.setText(reading);
-					
+
 					pack();
 					panel.revalidate();
 					panel.repaint();
 				} catch (Exception e) {
-					logger.error("Problem updating status window.", e);
+					logger.severe("Problem updating status window.");
 				}
 			}
 		}, 0, 500);
@@ -344,7 +400,7 @@ class InfoFrame extends JFrame {
 
 			showItem = new MenuItem("Show");
 			hideItem = new MenuItem("Hide");
-			
+
 			showItem.addActionListener(new ActionListener() {
 				@Override
 				public void actionPerformed(ActionEvent arg0) {
@@ -357,12 +413,12 @@ class InfoFrame extends JFrame {
 					iconify();
 				}
 			});
-			
+
 			popup.add(showItem);
 			popup.add(hideItem);
-			
+
 			hideItem.setEnabled(false);
-			
+
 			MenuItem exitItem = new MenuItem("Exit");
 			exitItem.addActionListener(new ActionListener() {
 				public void actionPerformed(ActionEvent e) {
@@ -382,34 +438,34 @@ class InfoFrame extends JFrame {
 	}
 
 	private void setupBehavior() {
-        setAlwaysOnTop(true);
-        
-        // Minimize if the window frame close button is hit
-        setDefaultCloseOperation(JFrame.HIDE_ON_CLOSE);
-        setResizable(false);
-        addWindowStateListener(new WindowAdapter() {
-        	@Override
-        	public void windowStateChanged(WindowEvent e) {
-        		if (e.getNewState() == JFrame.ICONIFIED) {
-        			iconify(); // FIXME This doesn't hide the dock window on OS X...
-        		} else if (e.getNewState() == JFrame.NORMAL) {
-        			deiconify();
-        		}
-        	}
-        });
-        addWindowListener(new WindowAdapter() {
-        	@Override
-            public void windowClosing(WindowEvent e) {
-        		if (!locallyDispatchedClose) {
-        			toggleMenuItems(false);
-        	    	String exitText = SensorConnector.isMac() ? SensorConnector.MAC_EXIT_TEXT : SensorConnector.WIN_EXIT_TEXT;
-        			trayIcon.displayMessage(null, "The sensor connector is still running. " + exitText, TrayIcon.MessageType.INFO);
-        		}
-        		locallyDispatchedClose = false;
-            }
-        });
+		setAlwaysOnTop(true);
+
+		// Minimize if the window frame close button is hit
+		setDefaultCloseOperation(JFrame.HIDE_ON_CLOSE);
+		setResizable(false);
+		addWindowStateListener(new WindowAdapter() {
+			@Override
+			public void windowStateChanged(WindowEvent e) {
+				if (e.getNewState() == JFrame.ICONIFIED) {
+					iconify(); // FIXME This doesn't hide the dock window on OS X...
+				} else if (e.getNewState() == JFrame.NORMAL) {
+					deiconify();
+				}
+			}
+		});
+		addWindowListener(new WindowAdapter() {
+			@Override
+				public void windowClosing(WindowEvent e) {
+				if (!locallyDispatchedClose) {
+					toggleMenuItems(false);
+						String exitText = SensorConnector.isMac() ? SensorConnector.MAC_EXIT_TEXT : SensorConnector.WIN_EXIT_TEXT;
+					trayIcon.displayMessage(null, "The sensor connector is still running. " + exitText, TrayIcon.MessageType.INFO);
+				}
+				locallyDispatchedClose = false;
+				}
+		});
 	}
-	
+
 	private void toggleMenuItems(boolean isFrameShowing) {
 		showItem.setEnabled(!isFrameShowing);
 		hideItem.setEnabled(isFrameShowing);

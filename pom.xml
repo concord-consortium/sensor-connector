@@ -118,7 +118,7 @@
       <groupId>org.concord.sensor</groupId>
       <artifactId>d2pio-jna</artifactId>
       <version>1.0-SNAPSHOT</version>
-    </dependency>		
+    </dependency>
     <dependency>
       <groupId>org.concord.sensor</groupId>
       <artifactId>labpro-usb-jna</artifactId>
